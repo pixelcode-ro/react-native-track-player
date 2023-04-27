@@ -4,8 +4,8 @@ import TrackPlayer, {
   State,
   usePlayWhenReady,
 } from 'react-native-track-player';
-import { useDebouncedValue } from '../hooks';
-import { Button } from './Button';
+import { useDebouncedValue } from '../../hooks';
+import { IconButton } from 'react-native-paper';
 
 export const PlayPauseButton: React.FC<{
   state: State | undefined;
@@ -25,11 +25,11 @@ export const PlayPauseButton: React.FC<{
       <ActivityIndicator />
     </View>
   ) : (
-    <Button
-      title={showPause ? 'Pause' : 'Play'}
+    <IconButton
+      icon={showPause ? 'pause' : 'play'}
       onPress={showPause ? TrackPlayer.pause : TrackPlayer.play}
-      type="primary"
-      style={styles.playPause}
+      mode='contained'
+      size={50}
     />
   );
 };

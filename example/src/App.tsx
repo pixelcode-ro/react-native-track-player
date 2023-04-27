@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 
-import { Button, PlayerControls, Progress, TrackInfo } from './components';
+import { Button, PlayerControls, Progress, TrackInfo } from './components/player';
 import { QueueInitialTracksService, SetupService } from './services';
 
 const App: React.FC = () => {
@@ -46,7 +46,7 @@ const App: React.FC = () => {
       <View style={styles.contentContainer}>
         <View style={styles.topBarContainer}>
           <Button
-            title="Queue"
+            title="Queue1"
             onPress={() => console.log('TODO: implement queue interface')}
             type="primary"
           />

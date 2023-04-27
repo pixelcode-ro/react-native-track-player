@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "rm -rf node_modules/react-native-track-player/{example,node_modules}",
     "android": "react-native run-android",
     "android:ide": "open -a /Applications/Android\\ Studio.app ./android",
     "ios": "react-native run-ios",
@@ -11,17 +10,30 @@
     "windows": "react-native run-windows",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint src",
+    "lint": "gts lint",
     "fresh": "rm -rf node_modules ; cd .. && yarn build ; cd example && yarn install",
     "types": "tsc --noEmit true",
     "ci:lint": "eslint src --max-warnings=0",
-    "ci:format": "prettier --check src"
+    "ci:format": "prettier --check src",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "yarn.cmd run compile",
+    "pretest": "yarn.cmd run compile",
+    "posttest": "yarn.cmd run lint"
   },
   "dependencies": {
     "@react-native-community/slider": "^4.4.2",
+    "@react-navigation/native": "^6.1.6",
+    "gts": "^3.1.1",
     "react": "18.2.0",
     "react-native": "0.71.4",
-    "react-native-windows": "^0.65.0-0"
+    "react-native-paper": "^5.7.0",
+    "react-native-safe-area-context": "^4.5.1",
+    "react-native-screens": "^3.20.0",
+    "react-native-vector-icons": "^9.2.0",
+    "react-native-windows": "^0.65.0-0",
+    "zustand": "^4.3.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -46,7 +58,9 @@
     "react-native-clean-project": "^4.0.1",
     "react-test-renderer": "18.2.0",
     "rimraf": "^3.0.2",
-    "typescript": "4.8.4"
+    "typescript": "4.8.4",
+    "gts": "^3.1.1",
+    "@types/node": "^14.11.2"
   },
   "jest": {
     "preset": "react-native",
