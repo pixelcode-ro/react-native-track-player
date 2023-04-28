@@ -12,7 +12,7 @@ export const PlayPauseButton: React.FC<{
 }> = ({ state }) => {
   const playWhenReady = usePlayWhenReady();
   const isLoading = useDebouncedValue(
-    state === State.Loading || state === State.Buffering,
+    state === State.Loading, // || state === State.Buffering
     250
   );
 
@@ -22,13 +22,13 @@ export const PlayPauseButton: React.FC<{
   const showBuffering = playWhenReady && isLoading;
   return showBuffering ? (
     <View style={styles.statusContainer}>
-      <ActivityIndicator />
+      <ActivityIndicator size={50} />
     </View>
   ) : (
     <IconButton
       icon={showPause ? 'pause' : 'play'}
       onPress={showPause ? TrackPlayer.pause : TrackPlayer.play}
-      mode='contained'
+      mode="contained"
       size={50}
     />
   );
