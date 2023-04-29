@@ -15,7 +15,7 @@ interface SongProps {
   biliShazamedName: string | undefined;
 }
 
-export default function Song({
+export default ({
   cid,
   bvid,
   name,
@@ -26,9 +26,9 @@ export default function Song({
   lyricOffset,
   page,
   biliShazamedName,
-}: SongProps): SongInterface {
+}: SongProps): SongInterface => {
   return {
-    id: cid,
+    id: String(cid),
     bvid,
     name,
     singer,
@@ -41,7 +41,7 @@ export default function Song({
     nameRaw: name,
     parsedName: reExtractSongName(name, singerId),
   };
-}
+};
 
 export const setSongBiliShazamed = (song: SongInterface, val: string) => {
   song.biliShazamedName = val;

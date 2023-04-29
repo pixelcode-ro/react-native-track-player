@@ -3,22 +3,18 @@ import { IconButton, Text } from 'react-native-paper';
 import { View, Pressable } from 'react-native';
 import { useNoxSetting } from '../../hooks/useSetting';
 import { styles } from '../style';
-
-export interface SongItemProps {
-  title: string;
-  id: string;
-  index: number;
-  artist: string;
-}
+import Song from '../../objects/SongInterface';
 
 function SongInfo({
   item,
+  index,
   currentPlaying,
 }: {
-  item: SongItemProps;
+  item: Song;
+  index: number;
   currentPlaying: boolean;
 }) {
-  const { title, id, index, artist } = item;
+  const [title, id, artist] = [item.parsedName, item.id, item.singer];
   const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
 
   return (
@@ -31,8 +27,8 @@ function SongInfo({
       }}
     >
       <View style={{ flex: 5 }}>
-        <Pressable onPress={() => setCurrentPlayingId(id)}>
-          <Text variant="titleMedium">{`${String(index)}.${title}`}</Text>
+        <Pressable onPress={() => setCurrentPlayingId(String(id))}>
+          <Text variant="titleMedium">{`${String(index + 1)}. ${title}`}</Text>
           <Text variant="titleSmall" style={{ color: 'grey' }}>
             {artist}
           </Text>

@@ -1,5 +1,7 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export default interface Song {
-  id: string | number;
+  id: string;
   bvid: string;
   name: string;
   nameRaw: string;
@@ -12,3 +14,20 @@ export default interface Song {
   biliShazamedName: string | undefined;
   page: number | undefined;
 }
+
+export const dummySong = (): Song => {
+  return {
+    id: uuidv4(),
+    bvid: '0',
+    name: 'dummySong',
+    nameRaw: 'dummySong',
+    singer: 'dummyArtist',
+    singerId: 0,
+    cover: '',
+    lyric: '',
+    lyricOffset: 0,
+    parsedName: 'dummySongParsed',
+    biliShazamedName: '',
+    page: 0,
+  };
+};

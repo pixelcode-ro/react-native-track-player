@@ -122,10 +122,17 @@ export const searchBiliURLs = async ({
   favList = [],
   useBiliTag = false,
 }) => {
+  let results = [];
   try {
-    return await reExtractSearch(input, progressEmitter, favList, useBiliTag);
+    results = await reExtractSearch(
+      input,
+      progressEmitter,
+      favList,
+      useBiliTag
+    );
   } catch (err) {
     console.warn(err);
   }
-  return [];
+  progressEmitter(0);
+  return results;
 };

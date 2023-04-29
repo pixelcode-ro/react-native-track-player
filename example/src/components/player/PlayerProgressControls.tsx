@@ -4,7 +4,7 @@ import { Progress } from './Progress';
 import { PlayerControls } from './PlayerControls';
 import { styles } from '../style';
 
-export default function PlayerBottomPanel() {
+export default () => {
   const track = useActiveTrack();
   return (
     <View style={styles.actionRowContainer}>
@@ -12,4 +12,4 @@ export default function PlayerBottomPanel() {
       <PlayerControls />
     </View>
   );
-}
+};
