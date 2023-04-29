@@ -8,6 +8,8 @@ import PlaylistInfo from './PlaylistInfo';
 import SongInfo, { SongItemProps } from './SongInfo';
 import { v4 as uuidv4 } from 'uuid';
 import { useNoxSetting } from '../../hooks/useSetting';
+import BiliSearchbar from './BiliSearchbar';
+import Song from '../../objects/SongInterface';
 
 const DUMMYDATA = [...Array(1222).keys()].reduce(
   (accumulator, currentValue) =>
@@ -26,7 +28,10 @@ const Playlist = () => {
   return (
     <SafeAreaView style={styles.screenContainer}>
       <View style={styles.contentContainer}>
-        <PlaylistInfo></PlaylistInfo>
+        <BiliSearchbar
+          onSearched={(songs: Array<Song>) => console.log(songs)}
+        />
+        <PlaylistInfo />
         <View style={{ ...styles.topBarContainer }}>
           <FlashList
             data={DUMMYDATA}

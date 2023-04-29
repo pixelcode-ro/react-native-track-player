@@ -1,6 +1,10 @@
 import Bottleneck from 'bottleneck';
-import VideoInfo from '../objects/VideoInfo';
+import VideoInfo, {
+  VideoInfoJsonData,
+  AudioInfoJsonData,
+} from '../objects/VideoInfo';
 import { extractSongName } from './re';
+import bfetch from './BiliFetch';
 
 /**
  * limits to bilibili API call to 200ms/call using bottleneck.
@@ -53,6 +57,7 @@ const URL_AUDIO_INFO =
   'https://www.bilibili.com/audio/music-service-c/web/song/info?sid={sid}';
 /**
  *  Video Basic Info
+ * http://api.bilibili.com/x/web-interface/view?bvid=BV1bv4y1p7K4
  */
 const URL_VIDEO_INFO =
   'http://api.bilibili.com/x/web-interface/view?bvid={bvid}';
@@ -120,9 +125,6 @@ export const fetchPlayUrlPromise = async (bvid: string, cid: string) => {
   if (cidStr.startsWith(ENUMS.audioType)) {
     return fetchAudioPlayUrlPromise(bvid);
   }
-  if (cidStr.startsWith(ENUMS.youtube)) {
-    return fetchYoutubePromise(bvid);
-  }
   return fetchVideoPlayUrlPromise(bvid, cid);
 };
 
@@ -145,7 +147,7 @@ export const fetchVideoPlayUrlPromise = async (
   // Returns a promise that resolves into the audio stream url
   return new Promise((resolve, reject) => {
     // console.log('Data.js Calling fetchPlayUrl:' + URL_PLAY_URL.replace("{bvid}", bvid).replace("{cid}", cid))
-    fetch(URL_PLAY_URL.replace('{bvid}', bvid).replace('{cid}', cid))
+    bfetch(URL_PLAY_URL.replace('{bvid}', bvid).replace('{cid}', cid))
       .then(res => res.json())
       .then(json => resolve(extractResponseJson(json, extractType)))
       .catch(err => reject(console.error(err)));
@@ -159,8 +161,14 @@ export const fetchVideoPlayUrlPromise = async (
  * some videos have episodes that this may not be accurate.
  * @returns
  */
-const fetchVideoTagPromiseRaw = async ({ bvid, cid }) => {
-  const req = await fetch(
+const fetchVideoTagPromiseRaw = async ({
+  bvid,
+  cid,
+}: {
+  bvid: string;
+  cid: string;
+}) => {
+  const req = await bfetch(
     URL_VIDEO_TAGS.replace('{bvid}', bvid).replace('{cid}', cid)
   );
   const json = await req.json();
@@ -179,9 +187,9 @@ const fetchVideoTagPromiseRaw = async ({ bvid, cid }) => {
 };
 
 export const biliAPILimiterWrapper = async (
-  params,
-  func = () => {},
-  progressEmit = () => {}
+  params: any,
+  func = (params: any) => new Promise(resolve => resolve(null)),
+  progressEmit = () => void 0
 ) => {
   return biliApiLimiter.schedule(() => {
     progressEmit();
@@ -189,7 +197,13 @@ export const biliAPILimiterWrapper = async (
   });
 };
 
-export const fetchVideoTagPromise = async ({ bvid, cid }) => {
+export const fetchVideoTagPromise = async ({
+  bvid,
+  cid,
+}: {
+  bvid: string;
+  cid: string;
+}) => {
   return biliTagApiLimiter.schedule(() =>
     fetchVideoTagPromiseRaw({ bvid, cid })
   );
@@ -201,26 +215,14 @@ export const fetchVideoTagPromise = async ({ bvid, cid }) => {
  * https://www.bilibili.com/audio/au745350
  * @returns
  */
-export const fetchAudioPlayUrlPromise = async sid => {
+export const fetchAudioPlayUrlPromise = async (sid: string) => {
   // Returns a promise that resolves into the audio stream url
   return new Promise((resolve, reject) => {
     // console.log('Data.js Calling fetchPlayUrl:' + URL_PLAY_URL.replace("{bvid}", bvid).replace("{cid}", cid))
-    readLocalStorages(['CurrentPlaying', 'PlayerSetting']).then(result => {
-      // To prohibit current playing audio from fetching a new audio stream
-      // If single loop, retreive the promise again.
-      if (
-        result.CurrentPlaying?.bvid === sid &&
-        result.PlayerSetting?.playMode === 'singleLoop'
-      ) {
-        // fixed return point; but why when repeat is single loop, a new promise is retrieved?
-        resolve(result.CurrentPlaying.playUrl);
-      } else {
-        fetch(URL_AUDIO_PLAY_URL.replace('{sid}', sid))
-          .then(res => res.json())
-          .then(json => resolve(json.data.cdns[0]))
-          .catch(err => reject(console.error(err)));
-      }
-    });
+    bfetch(URL_AUDIO_PLAY_URL.replace('{sid}', sid))
+      .then(res => res.json())
+      .then(json => resolve(json.data.cdns[0]))
+      .catch(err => reject(console.error(err)));
   });
 };
 
@@ -229,39 +231,12 @@ export const fetchAudioPlayUrlPromise = async sid => {
  * @param {string} bvid
  * @returns
  */
-export const fetchCID = async bvid => {
+export const fetchCID = async (bvid: string) => {
   // console.log('Data.js Calling fetchCID:' + URL_BVID_TO_CID.replace("{bvid}", bvid))
-  const res = await fetch(URL_BVID_TO_CID.replace('{bvid}', bvid));
+  const res = await bfetch(URL_BVID_TO_CID.replace('{bvid}', bvid));
   const json = await res.json();
   const cid = extractResponseJson(json, 'CID');
   return cid;
-};
-
-// Refactor needed for this func
-export const fetchLRC = async (name, setLyric, setSongTitle) => {
-  // console.log('Data.js Calling: fetchLRC')
-  // Get song mapping name and song name from title
-  const res = await fetch(URL_LRC_MAPPING);
-  const mappings = await res.text();
-  const songs = mappings.split('\n');
-  const songName = extractSongName(name);
-  setSongTitle(songName);
-
-  const songFile = songs.find((v, i, a) => v.includes(songName));
-  // use song name to get the LRC
-  try {
-    const lrc = await fetch(URL_LRC_BASE.replace('{songFile}', songFile));
-    if (lrc.status !== '200') {
-      setLyric('[00:00.000] 无法找到歌词');
-      return;
-    }
-
-    const text = await lrc.text();
-    setLyric(text.replaceAll('\r\n', '\n'));
-    return text.replaceAll('\r\n', '\n');
-  } catch (error) {
-    setLyric('[00:00.000] 无法找到歌词');
-  }
 };
 
 /**
@@ -269,12 +244,12 @@ export const fetchLRC = async (name, setLyric, setSongTitle) => {
  * @param {string} bvid
  * @returns
  */
-export const fetchVideoInfoRaw = async ({ bvid }) => {
-  console.info('calling fetchVideoInfo');
-  const res = await fetch(URL_VIDEO_INFO.replace('{bvid}', bvid));
+export const fetchVideoInfoRaw = async ({ bvid }: { bvid: string }) => {
+  console.info('calling fetchVideoInfo', bvid);
+  const res = await bfetch(URL_VIDEO_INFO.replace('{bvid}', bvid));
   const json = await res.json();
   try {
-    const { data } = json;
+    const data = json.data as VideoInfoJsonData;
     const v = new VideoInfo(
       data.title,
       data.desc,
@@ -282,7 +257,7 @@ export const fetchVideoInfoRaw = async ({ bvid }) => {
       data.pic,
       data.owner,
       data.pages.map(s => {
-        return { bvid, part: s.part, cid: s.cid };
+        return { bvid, part: s.part, cid: s.cid, duration: s.duration };
       }),
       bvid
     );
@@ -299,7 +274,10 @@ export const fetchVideoInfoRaw = async ({ bvid }) => {
  * @param {function} progressEmit
  * @returns
  */
-export const fetchVideoInfo = async (bvid, progressEmit = () => {}) => {
+export const fetchVideoInfo = async (
+  bvid: string,
+  progressEmit = () => void 0
+) => {
   return biliAPILimiterWrapper({ bvid }, fetchVideoInfoRaw, progressEmit);
 };
 
@@ -309,25 +287,25 @@ export const fetchVideoInfo = async (bvid, progressEmit = () => {}) => {
  * technically an int.
  * @returns
  */
-export const fetchAudioInfoRaw = async sid => {
+export const fetchAudioInfoRaw = async (sid: string) => {
   console.info('calling fetcAudioInfo');
-  const res = await fetch(URL_AUDIO_INFO.replace('{sid}', sid));
+  const res = await bfetch(URL_AUDIO_INFO.replace('{sid}', sid));
   const json = await res.json();
   try {
-    const { data } = json;
+    const data = json.data as AudioInfoJsonData;
     const v = new VideoInfo(
       data.title,
       data.intro,
       1,
       data.cover,
-      { name: data.uname, mid: data.uid },
-      [{ cid: ENUMS.audioType }],
+      { name: data.uname, mid: data.uid, face: '' },
+      [{ cid: ENUMS.audioType, bvid: sid, part: '1', duration: data.duration }],
       sid
     );
     return v;
   } catch (error) {
     console.error(error);
-    console.warn('Some issue happened when fetching', bvid);
+    console.warn('Some issue happened when fetching', sid);
   }
 };
 
@@ -342,17 +320,17 @@ export const fetchAudioInfoRaw = async sid => {
  * @returns
  */
 export const fetchBiliSeriesList = async (
-  mid,
-  sid,
-  progressEmitter,
-  favList = []
+  mid: string,
+  sid: string,
+  progressEmitter = (param: any) => void 0,
+  favList: Array<any> = []
 ) => {
   console.info('calling fetchBiliSeriesList');
   const page = 0;
-  const res = await fetch(
+  const res = await bfetch(
     URL_BILISERIES_INFO.replace('{mid}', mid)
       .replace('{sid}', sid)
-      .replace('{pn}', page)
+      .replace('{pn}', String(page))
   );
   const json = await res.json();
   const { data } = json;
@@ -367,21 +345,24 @@ export const fetchBiliSeriesList = async (
       continue;
     }
     BVidPromises.push(
-      fetchVideoInfo(data.archives[i].bvid, () => {
-        progressEmitter(parseInt((100 * (i + 1)) / data.archives.length));
-      })
+      fetchVideoInfo(data.archives[i].bvid, () =>
+        progressEmitter(Math.floor((100 * (i + 1)) / data.archives.length))
+      )
     );
   }
   return (await Promise.all(BVidPromises)).filter(item => item !== undefined);
 };
 
-export const fetchiliBVIDs = async (BVids, progressEmitter = () => {}) => {
+export const fetchiliBVIDs = async (
+  BVids: Array<string>,
+  progressEmitter = (param: any) => void 0
+) => {
   const BVidPromises = [];
   for (let index = 0, n = BVids.length; index < n; index++) {
     BVidPromises.push(
-      fetchVideoInfo(BVids[index], () => {
-        progressEmitter(parseInt((100 * (index + 1)) / n));
-      })
+      fetchVideoInfo(BVids[index], () =>
+        progressEmitter(Math.floor((100 * (index + 1)) / n))
+      )
     );
   }
   return await Promise.all(BVidPromises);
@@ -399,15 +380,15 @@ export const fetchiliBVIDs = async (BVids, progressEmitter = () => {}) => {
  * @returns
  */
 export const fetchBiliPaginatedAPI = async (
-  url,
-  getMediaCount,
-  getPageSize,
-  getItems,
-  progressEmitter,
+  url: string,
+  getMediaCount: (param: any) => number,
+  getPageSize: (param: any) => number,
+  getItems: (param: any) => Array<any>,
+  progressEmitter = (param: any) => void 0,
   favList = [],
   limiter = biliTagApiLimiter
 ) => {
-  const res = await fetch(url.replace('{pn}', 1));
+  const res = await bfetch(url.replace('{pn}', String(1)));
   const { data } = await res.clone().json();
   const mediaCount = getMediaCount(data);
   const BVids = [];
@@ -418,7 +399,7 @@ export const fetchBiliPaginatedAPI = async (
     page++
   ) {
     pagesPromises.push(
-      limiter.schedule(() => fetch(url.replace('{pn}', page)))
+      limiter.schedule(() => bfetch(url.replace('{pn}', page)))
     );
   }
   const resolvedPromises = await Promise.all(pagesPromises);
@@ -462,7 +443,7 @@ export const fetchAwaitBiliPaginatedAPI = async (
   progressEmitter,
   favList = []
 ) => {
-  const res = await fetch(url.replace('{pn}', 1));
+  const res = await bfetch(url.replace('{pn}', 1));
   const { data } = await res.clone().json();
   const mediaCount = getMediaCount(data);
   const BVids = [];
@@ -472,7 +453,7 @@ export const fetchAwaitBiliPaginatedAPI = async (
     page <= n;
     page++
   ) {
-    pagesPromises.push(await fetch(url.replace('{pn}', page)));
+    pagesPromises.push(await bfetch(url.replace('{pn}', page)));
   }
   await Promise.all(
     pagesPromises.map(async pages => {
@@ -582,11 +563,11 @@ export const fetchGenericPaginatedList = async (
 ) => {
   console.info('calling fetchGenricPaginatedList');
   const exampleUrl = 'https://steria.vplayer.tk/api/musics/{pn}';
-  const res = await fetch(url.replace('{pn}', 1));
+  const res = await bfetch(url.replace('{pn}', 1));
   const videoInfos = [await res.json()];
 
   for (let page = 2; true; page++) {
-    videoInfos.push(fetch(url.replace('{pn}', page)).json());
+    videoInfos.push(bfetch(url.replace('{pn}', page)).json());
     if (videoInfos[videoInfos.length - 1].length === 0) break;
   }
   await Promise.all(videoInfos);
@@ -714,7 +695,7 @@ export const searchLyricOptions = async (searchKey, setOptions) => {
     setOptions([]);
     return;
   }
-  const res = await fetch(URL_QQ_SEARCH.replace('{KeyWord}', searchKey));
+  const res = await bfetch(URL_QQ_SEARCH.replace('{KeyWord}', searchKey));
   const json = await res.json();
   const data = json.data.song.itemlist;
   const slimData = data.map((s, v) => {
@@ -730,7 +711,7 @@ export const searchLyricOptions = async (searchKey, setOptions) => {
 
 export const searchLyric = async (searchMID, setLyric) => {
   console.info('calling searchLyric');
-  const res = await fetch(URL_QQ_LYRIC.replace('{SongMid}', searchMID));
+  const res = await bfetch(URL_QQ_LYRIC.replace('{SongMid}', searchMID));
   const json = await res.json();
   if (!json.lyric) {
     setLyric('[00:00.000] 无法找到歌词,请手动搜索');

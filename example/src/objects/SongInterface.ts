@@ -6,8 +6,8 @@ export default interface Song {
   singer: string;
   singerId: string | number;
   cover: string;
-  lyric: string;
-  lyricOffset: number;
+  lyric: string | undefined;
+  lyricOffset: number | undefined;
   parsedName: string;
   biliShazamedName: string | undefined;
   page: number | undefined;

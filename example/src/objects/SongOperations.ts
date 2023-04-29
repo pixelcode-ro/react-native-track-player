@@ -9,8 +9,8 @@ interface SongProps {
   singer: string;
   singerId: string | number;
   cover: string;
-  lyric: string;
-  lyricOffset: number;
+  lyric: string | undefined;
+  lyricOffset: number | undefined;
   page: number | undefined;
   biliShazamedName: string | undefined;
 }

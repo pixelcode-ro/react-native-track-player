@@ -27,7 +27,6 @@ const App: React.FC = () => {
   const isPlayerReady = useSetupPlayer();
   const Drawer = createDrawerNavigator();
   const Tab = createMaterialTopTabNavigator();
-
   function MyTabs() {
     return (
       <React.Fragment>
@@ -110,9 +109,9 @@ const App: React.FC = () => {
                       onPress={() => console.log('delete')}
                       size={20}
                       style={{ position: 'absolute', right: 10 }}
-                      key={uuidv4()}
                     />
                   )}
+                  key={uuidv4()}
                 />
               ))}
             </DrawerContentScrollView>
