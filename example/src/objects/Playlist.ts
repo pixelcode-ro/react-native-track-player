@@ -1,5 +1,7 @@
-import Song from './SongInterface';
+import { Track } from 'react-native-track-player';
 import { v4 as uuidv4 } from 'uuid';
+import Song from './SongInterface';
+import { resolveUrl, NULL_TRACK } from './SongOperations';
 
 export default interface Playlist {
   songList: Array<Song>;
@@ -19,4 +21,24 @@ export const dummyPlaylist = (title = 'Search'): Playlist => {
     blacklistedUrl: [],
     useBiliShazam: false,
   };
+};
+
+export const playlistToTracklist = async (
+  playlist: Playlist,
+  resolveIndex = -1
+): Promise<Track[]> => {
+  const result = [];
+  for (let i = 0, n = playlist.songList.length; i < n; i++) {
+    const url =
+      i === resolveIndex ? await resolveUrl(playlist.songList[i]) : NULL_TRACK;
+    // HACK: need to register an event listener that update url and header.
+    result.push({
+      ...url,
+      title: playlist.songList[i].parsedName,
+      artist: playlist.songList[i].singer,
+      artwork: playlist.songList[i].cover,
+      duration: playlist.songList[i].duration,
+    });
+  }
+  return result;
 };

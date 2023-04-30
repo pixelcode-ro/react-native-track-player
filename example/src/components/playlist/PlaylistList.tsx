@@ -23,7 +23,6 @@ export default () => {
       style={{
         ...styles.topBarContainer,
         flex: 5,
-        top: 15,
       }}
     >
       <FlashList

@@ -274,9 +274,10 @@ export const fetchVideoInfoRaw = async ({ bvid }) => {
       data.pic,
       data.owner,
       data.pages.map(s => {
-        return { bvid, part: s.part, cid: s.cid };
+        return { bvid, part: s.part, cid: s.cid, duration: s.duration };
       }),
-      bvid
+      bvid,
+      data.duration
     );
     return v;
   } catch (error) {
@@ -312,9 +313,10 @@ export const fetchAudioInfoRaw = async sid => {
       data.intro,
       1,
       data.cover,
-      { name: data.uname, mid: data.uid },
+      { name: data.uname, mid: data.uid, duration: data.duration },
       [{ cid: ENUMS.audioType }],
-      sid
+      sid,
+      data.duration
     );
     return v;
   } catch (error) {
@@ -606,7 +608,8 @@ export const fetchBiliSearchList = async (kword, progressEmitter) => {
     val = await fetchBiliPaginatedAPI(
       URL_BILI_SEARCH.replace('{keyword}', kword),
       data => {
-        return Math.min(data.numResults, data.pagesize * 2);
+        return data.pagesize;
+        // return Math.min(data.numResults, data.pagesize * 2);
       },
       data => {
         return data.pagesize;

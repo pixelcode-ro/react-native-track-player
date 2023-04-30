@@ -27,12 +27,12 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: 'grey',
     marginTop: 30,
   },
   artistText: {
     fontSize: 16,
     fontWeight: '200',
-    color: 'white',
+    color: 'grey',
   },
 });

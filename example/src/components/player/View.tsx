@@ -12,19 +12,21 @@ import {
 import { Button, PlayerControls, Progress, TrackInfo } from './';
 import { QueueInitialTracksService, SetupService } from '../../services';
 import { styles } from '../style';
+import { IconButton } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 
 export function Player() {
   const track = useActiveTrack();
+  const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.screenContainer}>
       <StatusBar barStyle={'light-content'} />
       <View style={styles.contentContainer}>
         <View style={styles.topBarContainer}>
-          <Button
-            title="Queue1"
-            onPress={() => console.log('TODO: implement queue interface')}
-            type="primary"
+          <IconButton
+            icon="playlist-music"
+            onPress={() => navigation.navigate('Playlist' as never)}
           />
         </View>
         <TrackInfo track={track} />

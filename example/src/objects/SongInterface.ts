@@ -13,6 +13,7 @@ export default interface Song {
   parsedName: string;
   biliShazamedName: string | undefined;
   page: number | undefined;
+  duration: number;
 }
 
 export const dummySong = (): Song => {
@@ -29,5 +30,6 @@ export const dummySong = (): Song => {
     parsedName: 'dummySongParsed',
     biliShazamedName: '',
     page: 0,
+    duration: 0,
   };
 };

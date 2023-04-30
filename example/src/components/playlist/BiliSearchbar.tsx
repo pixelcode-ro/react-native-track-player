@@ -29,7 +29,7 @@ export default ({
   };
 
   return (
-    <View style={{ width: '100%', flex: 0.5 }}>
+    <View style={{ width: '100%', height: 50 }}>
       <View style={{ flexDirection: 'row', width: '100%' }}>
         <TextInput
           style={{ flex: 5 }}

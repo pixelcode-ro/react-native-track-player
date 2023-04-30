@@ -11,6 +11,7 @@ export default class VideoInfo {
     duration: number;
   }>;
   bvid: string;
+  duration: number;
 
   constructor(
     title: string,
@@ -24,7 +25,8 @@ export default class VideoInfo {
       cid: number | string;
       duration: number;
     }>,
-    bvid: string
+    bvid: string,
+    duration: number
   ) {
     this.title = title;
     this.desc = desc;
@@ -33,6 +35,7 @@ export default class VideoInfo {
     this.uploader = uploader;
     this.pages = pages;
     this.bvid = bvid;
+    this.duration = duration;
   }
 }
 
@@ -60,6 +63,7 @@ export interface VideoInfoJsonData {
     duration: number;
     [key: string]: any;
   }>;
+  duration: number;
   [key: string]: any;
 }
 

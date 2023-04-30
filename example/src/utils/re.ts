@@ -78,7 +78,6 @@ export const reExtractSongName = (
       filename = extractParenthesis(
         extractWith(filename, [/【.+】《(.+)》/, /《(.+)》/, /【.+】(.+)/])
       );
-      console.debug(filename);
       break;
     case '33576761': // "-哆啦A林-":
       // https://space.bilibili.com/33576761/channel/series

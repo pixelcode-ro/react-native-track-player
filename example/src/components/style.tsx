@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   contentContainer: {
-    flex: 4,
+    flex: 6,
     alignItems: 'center',
   },
   topBarContainer: {

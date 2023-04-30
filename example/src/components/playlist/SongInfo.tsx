@@ -4,6 +4,9 @@ import { View, Pressable } from 'react-native';
 import { useNoxSetting } from '../../hooks/useSetting';
 import { styles } from '../style';
 import Song from '../../objects/SongInterface';
+import { seconds2MMSS } from '../../utils/Utils';
+import TrackPlayer from 'react-native-track-player';
+import { playlistToTracklist } from '../../objects/Playlist';
 
 function SongInfo({
   item,
@@ -16,6 +19,23 @@ function SongInfo({
 }) {
   const [title, id, artist] = [item.parsedName, item.id, item.singer];
   const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
+  const currentPlayingId = useNoxSetting(state => state.currentPlayingId);
+  const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
+
+  const playSong = () => {
+    if (String(id) === currentPlayingId) {
+      console.log('playlist id same');
+    }
+    setCurrentPlayingId(String(id));
+    playlistToTracklist(currentPlaylist, index).then(trackList => {
+      console.log(trackList[index]);
+      TrackPlayer.reset().then(() => {
+        TrackPlayer.add(trackList).then(() => {
+          TrackPlayer.skip(index).then(() => TrackPlayer.play());
+        });
+      });
+    });
+  };
 
   return (
     <View
@@ -27,14 +47,23 @@ function SongInfo({
       }}
     >
       <View style={{ flex: 5 }}>
-        <Pressable onPress={() => setCurrentPlayingId(String(id))}>
+        <Pressable onPress={playSong}>
           <Text variant="titleMedium">{`${String(index + 1)}. ${title}`}</Text>
           <Text variant="titleSmall" style={{ color: 'grey' }}>
             {artist}
           </Text>
         </Pressable>
       </View>
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 2,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Text variant="titleSmall" style={{ top: 13 }}>
+          {seconds2MMSS(item.duration)}
+        </Text>
         <IconButton
           icon="dots-vertical"
           onPress={() => console.log}

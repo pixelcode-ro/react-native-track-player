@@ -8,16 +8,23 @@ export default () => {
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
 
   return (
-    <View style={[styles.topBarContainer, { height: 55, top: 15 }]}>
+    <View style={[styles.topBarContainer, { top: 10 }]}>
       <View style={{ flex: 4 }}>
-        <Text variant="titleMedium" style={{ top: 5 }}>
+        <Text variant="titleMedium" style={{}}>
           {currentPlaylist.title}
         </Text>
-        <Text variant="titleSmall" style={{ top: 5 }}>
+        <Text variant="titleSmall" style={{}}>
           {currentPlaylist.songList.length}
         </Text>
       </View>
-      <View style={{ flexDirection: 'row', flex: 2 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flex: 2,
+          bottom: 10,
+          justifyContent: 'flex-end',
+        }}
+      >
         <IconButton
           icon="playlist-edit"
           onPress={() => console.log}

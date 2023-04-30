@@ -70,11 +70,9 @@ export const getSongList = async ({ bvid, useBiliTag = false }) => {
         singer: info.uploader.name,
         singerId: info.uploader.mid,
         cover: info.picSrc,
-        musicSrc: () => {
-          return fetchPlayUrlPromise(bvid, info.pages[0].cid);
-        },
         lyric: lrc,
         page: 1,
+        duration: info.duration,
       }),
     ];
   }
@@ -91,11 +89,9 @@ export const getSongList = async ({ bvid, useBiliTag = false }) => {
         singer: info.uploader.name,
         singerId: info.uploader.mid,
         cover: info.picSrc,
-        musicSrc: () => {
-          return fetchPlayUrlPromise(bvid, page.cid);
-        },
         lyric: lrc,
         page: index + 1,
+        duration: page.duration,
       })
     );
   }
@@ -119,11 +115,9 @@ export const getSongListFromAudio = async ({ bvid }) => {
         singer: info.uploader.name,
         singerId: info.uploader.mid,
         cover: info.picSrc,
-        musicSrc: () => {
-          return fetchPlayUrlPromise(bvid, info.pages[0].cid);
-        },
         lyric: lrc,
         page: 1,
+        duration: info.duration,
       }),
     ];
   }
@@ -140,11 +134,9 @@ export const getSongListFromAudio = async ({ bvid }) => {
         singer: info.uploader.name,
         singerId: info.uploader.mid,
         cover: info.picSrc,
-        musicSrc: () => {
-          return fetchPlayUrlPromise(bvid, page.cid);
-        },
         lyric: lrc,
         page: index + 1,
+        duration: page.duration,
       })
     );
   }
@@ -170,10 +162,8 @@ export const getSongsFromBVids = async ({ infos, useBiliTag = false }) => {
           singer: info.uploader.name,
           singerId: info.uploader.mid,
           cover: info.picSrc,
-          musicSrc: () => {
-            return fetchPlayUrlPromise(info.pages[0].bvid, info.pages[0].cid);
-          },
           page: 1,
+          duration: info.duration,
         })
       );
     } else {
@@ -189,10 +179,8 @@ export const getSongsFromBVids = async ({ infos, useBiliTag = false }) => {
             singer: info.uploader.name,
             singerId: info.uploader.mid,
             cover: info.picSrc,
-            musicSrc: () => {
-              return fetchPlayUrlPromise(page.bvid, page.cid);
-            },
             page: index + 1,
+            duration: page.duration,
           })
         );
       }
@@ -221,9 +209,7 @@ export const getSongsFromSteriaPlayer = async infos => {
           singerId: info.data[index].artist,
           cover:
             'https://i2.hdslb.com/bfs/face/b70f6e62e4582d4fa5d48d86047e64eb57d7504e.jpg@240w_240h_1c_1s.webp',
-          musicSrc: () => {
-            return info.data[index].url;
-          },
+          duration: 0,
         })
       );
     }

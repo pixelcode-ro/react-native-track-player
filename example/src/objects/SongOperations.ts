@@ -1,5 +1,10 @@
+import { fetchPlayUrlPromise } from '../utils/Data';
 import { reExtractSongName, extractParenthesis } from '../utils/re';
 import SongInterface from './SongInterface';
+import { customReqHeader, DEFAULT_UA } from '../utils/BiliFetch';
+
+export const DEFAULT_NULL_URL = 'NULL';
+export const NULL_TRACK = { url: DEFAULT_NULL_URL, urlRefreshTimeStamp: 0 };
 
 interface SongProps {
   cid: string | number;
@@ -13,6 +18,7 @@ interface SongProps {
   lyricOffset: number | undefined;
   page: number | undefined;
   biliShazamedName: string | undefined;
+  duration: number;
 }
 
 export default ({
@@ -26,6 +32,7 @@ export default ({
   lyricOffset,
   page,
   biliShazamedName,
+  duration,
 }: SongProps): SongInterface => {
   return {
     id: String(cid),
@@ -40,6 +47,7 @@ export default ({
     biliShazamedName,
     nameRaw: name,
     parsedName: reExtractSongName(name, singerId),
+    duration,
   };
 };
 
@@ -56,4 +64,18 @@ export const removeSongBiliShazamed = (song: SongInterface) => {
   song.biliShazamedName = undefined;
   song.name = song.nameRaw;
   song.parsedName = reExtractSongName(song.name, song.singerId);
+};
+
+export const resolveUrl = async (song: SongInterface) => {
+  try {
+    const url = await fetchPlayUrlPromise(song.bvid, song.id);
+    return {
+      url,
+      headers: customReqHeader(url, {}),
+      userAgent: DEFAULT_UA,
+      urlRefreshTimestamp: new Date().getTime(),
+    };
+  } catch {
+    return NULL_TRACK;
+  }
 };
