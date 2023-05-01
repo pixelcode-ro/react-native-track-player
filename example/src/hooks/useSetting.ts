@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import Playlist, { dummyPlaylist } from '../objects/Playlist';
+import { NoxRepeatMode } from '../components/player/enums/repeatMode';
 
 interface NoxSetting {
   currentPlayingId: string | null;
@@ -14,6 +15,9 @@ interface NoxSetting {
   setFavoritePlaylist: (val: Playlist) => void;
   currentPlayingPlaylistId: string;
   setCurrentPlayingPlaylistId: (val: string) => void;
+
+  playerRepeat: string;
+  setPlayerRepeat: (val: string) => void;
 }
 
 export const useNoxSetting = create<NoxSetting>(set => ({
@@ -30,4 +34,7 @@ export const useNoxSetting = create<NoxSetting>(set => ({
   currentPlayingPlaylistId: '',
   setCurrentPlayingPlaylistId: (val: string) =>
     set({ currentPlayingPlaylistId: val }),
+
+  playerRepeat: NoxRepeatMode.SHUFFLE,
+  setPlayerRepeat: (val: string) => set({ playerRepeat: val }),
 }));

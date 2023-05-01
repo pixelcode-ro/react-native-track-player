@@ -27,14 +27,33 @@ function SongInfo({
       console.log('playlist id same');
     }
     setCurrentPlayingId(String(id));
-    playlistToTracklist(currentPlaylist, index).then(trackList => {
-      console.log(trackList[index]);
-      TrackPlayer.reset().then(() => {
-        TrackPlayer.add(trackList).then(() => {
-          TrackPlayer.skip(index).then(() => TrackPlayer.play());
+    TrackPlayer.setQueue(playlistToTracklist(currentPlaylist, index)).then(
+      () => {
+        TrackPlayer.skip(index);
+      }
+    );
+    /**
+       * ugly code testing out uninterrupted playlist queue change:
+      TrackPlayer.getActiveTrackIndex().then(activeTrackIndex => {
+        TrackPlayer.getQueue().then(queue => {
+          const activeTrack = queue[activeTrackIndex!];
+          let removeTrackIndex = [...Array(queue.length).keys()];
+          removeTrackIndex.splice(activeTrackIndex!, 1);
+          console.debug(removeTrackIndex, queue, activeTrack, activeTrackIndex!);
+          TrackPlayer.remove(removeTrackIndex).then(() => {
+            TrackPlayer.getQueue().then(newQueue =>
+              console.log('newQueue b4 insert', newQueue)
+            );
+            TrackPlayer.add(trackList).then(() => {
+              TrackPlayer.getQueue().then(newQueue =>
+                console.log('newQueue ', newQueue)
+              );
+            });
+          });
         });
       });
-    });
+      return;
+       */
   };
 
   return (

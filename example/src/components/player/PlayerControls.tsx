@@ -1,30 +1,45 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import TrackPlayer, { usePlaybackState } from 'react-native-track-player';
-
+import TrackPlayer, {
+  usePlaybackState,
+  RepeatMode,
+} from 'react-native-track-player';
 import { IconButton } from 'react-native-paper';
+
 import { PlaybackError } from './PlaybackError';
 import { PlayPauseButton } from './PlayPauseButton';
-import { RepeatMode } from 'react-native-track-player';
+import { useNoxSetting } from '../../hooks/useSetting';
+import { playlistToTracklist } from '../../objects/Playlist';
+import { NoxRepeatMode } from './enums/repeatMode';
 
 const performSkipToNext = () => TrackPlayer.skipToNext();
 const performSkipToPrevious = () => TrackPlayer.skipToPrevious();
 
 export const PlayerControls: React.FC = () => {
+  const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
+  const playmode = useNoxSetting(state => state.playerRepeat);
+  const setPlayMode = useNoxSetting(state => state.setPlayerRepeat);
+
   const playback = usePlaybackState();
-  const [playmode, setPlayMode] = React.useState('shuffle');
+
   const onClickPlaymode = () => {
     switch (playmode) {
-      case 'shuffle':
-        setPlayMode('repeat');
+      case NoxRepeatMode.SHUFFLE:
+        setPlayMode(NoxRepeatMode.REPEAT);
+        TrackPlayer.setQueueUninterrupted(
+          playlistToTracklist(currentPlaylist)
+        ).then(() => TrackPlayer.getQueue().then(console.log));
         break;
-      case 'repeat':
-        setPlayMode('repeat-once');
+      case NoxRepeatMode.REPEAT:
+        setPlayMode(NoxRepeatMode.REPEAT_TRACK);
         TrackPlayer.setRepeatMode(RepeatMode.Track);
         break;
-      case 'repeat-once':
-        setPlayMode('shuffle');
+      case NoxRepeatMode.REPEAT_TRACK:
+        setPlayMode(NoxRepeatMode.SHUFFLE);
         TrackPlayer.setRepeatMode(RepeatMode.Queue);
+        TrackPlayer.shuffle().then(() =>
+          TrackPlayer.getQueue().then(console.log)
+        );
         break;
       default:
         break;
