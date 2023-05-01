@@ -23,10 +23,10 @@ export const dummyPlaylist = (title = 'Search'): Playlist => {
   };
 };
 
-export const playlistToTracklist = async (
+export const playlistToTracklist = (
   playlist: Playlist,
   resolveIndex = -1
-): Promise<Track[]> => {
+): Track[] => {
   const result = [];
   for (let i = 0, n = playlist.songList.length; i < n; i++) {
     // const url = i === resolveIndex ? await resolveUrl(playlist.songList[i]) :
