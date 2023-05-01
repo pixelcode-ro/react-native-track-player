@@ -29,15 +29,14 @@ export const playlistToTracklist = async (
 ): Promise<Track[]> => {
   const result = [];
   for (let i = 0, n = playlist.songList.length; i < n; i++) {
-    const url =
-      i === resolveIndex ? await resolveUrl(playlist.songList[i]) : NULL_TRACK;
-    // HACK: need to register an event listener that update url and header.
+    // const url = i === resolveIndex ? await resolveUrl(playlist.songList[i]) :
     result.push({
-      ...url,
+      ...NULL_TRACK,
       title: playlist.songList[i].parsedName,
       artist: playlist.songList[i].singer,
       artwork: playlist.songList[i].cover,
       duration: playlist.songList[i].duration,
+      song: playlist.songList[i],
     });
   }
   return result;

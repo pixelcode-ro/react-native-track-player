@@ -413,7 +413,7 @@ export const fetchBiliPaginatedAPI = async (
     page++
   ) {
     pagesPromises.push(
-      limiter.schedule(() => bfetch(url.replace('{pn}', page)))
+      limiter.schedule(() => bfetch(url.replace('{pn}', page), params))
     );
   }
   const resolvedPromises = await Promise.all(pagesPromises);
@@ -455,9 +455,11 @@ export const fetchAwaitBiliPaginatedAPI = async (
   getPageSize,
   getItems,
   progressEmitter,
-  favList = []
+  favList = [],
+  limiter = biliTagApiLimiter,
+  params = undefined
 ) => {
-  const res = await bfetch(url.replace('{pn}', 1));
+  const res = await bfetch(url.replace('{pn}', 1), params);
   const { data } = await res.clone().json();
   const mediaCount = getMediaCount(data);
   const BVids = [];
@@ -467,7 +469,7 @@ export const fetchAwaitBiliPaginatedAPI = async (
     page <= n;
     page++
   ) {
-    pagesPromises.push(await bfetch(url.replace('{pn}', page)));
+    pagesPromises.push(await bfetch(url.replace('{pn}', page), params));
   }
   await Promise.all(
     pagesPromises.map(async pages => {
@@ -608,8 +610,8 @@ export const fetchBiliSearchList = async (kword, progressEmitter) => {
     val = await fetchBiliPaginatedAPI(
       URL_BILI_SEARCH.replace('{keyword}', kword),
       data => {
-        return data.pagesize;
-        // return Math.min(data.numResults, data.pagesize * 2);
+        // return data.pagesize;
+        return Math.min(data.numResults, data.pagesize * 2);
       },
       data => {
         return data.pagesize;

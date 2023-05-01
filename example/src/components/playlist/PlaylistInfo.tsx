@@ -3,6 +3,7 @@ import { IconButton, Text } from 'react-native-paper';
 import { View } from 'react-native';
 import { styles } from '../style';
 import { useNoxSetting } from '../../hooks/useSetting';
+import { seconds2HHMMSS } from '../../utils/Utils';
 
 export default () => {
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
@@ -13,15 +14,21 @@ export default () => {
         <Text variant="titleMedium" style={{}}>
           {currentPlaylist.title}
         </Text>
-        <Text variant="titleSmall" style={{}}>
-          {currentPlaylist.songList.length}
+        <Text variant="labelMedium" style={{}}>
+          {`${currentPlaylist.songList.length} / ${seconds2HHMMSS(
+            currentPlaylist.songList.reduce(
+              (accumulator, currentValue) =>
+                accumulator + currentValue.duration,
+              0
+            )
+          )}`}
         </Text>
       </View>
       <View
         style={{
           flexDirection: 'row',
           flex: 2,
-          bottom: 10,
+          bottom: 5,
           justifyContent: 'flex-end',
         }}
       >

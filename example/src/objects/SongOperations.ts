@@ -73,7 +73,7 @@ export const resolveUrl = async (song: SongInterface) => {
       url,
       headers: customReqHeader(url, {}),
       userAgent: DEFAULT_UA,
-      urlRefreshTimestamp: new Date().getTime(),
+      urlRefreshTimeStamp: new Date().getTime(),
     };
   } catch {
     return NULL_TRACK;

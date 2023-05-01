@@ -5,6 +5,7 @@ import TrackPlayer, { usePlaybackState } from 'react-native-track-player';
 import { IconButton } from 'react-native-paper';
 import { PlaybackError } from './PlaybackError';
 import { PlayPauseButton } from './PlayPauseButton';
+import { RepeatMode } from 'react-native-track-player';
 
 const performSkipToNext = () => TrackPlayer.skipToNext();
 const performSkipToPrevious = () => TrackPlayer.skipToPrevious();
@@ -19,9 +20,11 @@ export const PlayerControls: React.FC = () => {
         break;
       case 'repeat':
         setPlayMode('repeat-once');
+        TrackPlayer.setRepeatMode(RepeatMode.Track);
         break;
       case 'repeat-once':
         setPlayMode('shuffle');
+        TrackPlayer.setRepeatMode(RepeatMode.Queue);
         break;
       default:
         break;
