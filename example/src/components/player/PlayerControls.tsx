@@ -2,7 +2,9 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import TrackPlayer, {
   usePlaybackState,
+  useTrackPlayerEvents,
   RepeatMode,
+  Event,
 } from 'react-native-track-player';
 import { IconButton } from 'react-native-paper';
 
@@ -19,8 +21,15 @@ export const PlayerControls: React.FC = () => {
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
   const playmode = useNoxSetting(state => state.playerRepeat);
   const setPlayMode = useNoxSetting(state => state.setPlayerRepeat);
+  const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
 
   const playback = usePlaybackState();
+
+  // HACK:  this shouldnt be here, but where?
+  useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], event => {
+    if (event.track) setCurrentPlayingId(event.track.song.id);
+    else setCurrentPlayingId('');
+  });
 
   const onClickPlaymode = () => {
     switch (playmode) {
