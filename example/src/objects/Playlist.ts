@@ -3,6 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import Song from './SongInterface';
 import { resolveUrl, NULL_TRACK } from './SongOperations';
 
+export enum PLAYLIST_ENUMS {
+  TYPE_TYPICA_PLAYLIST = 'typical',
+  TYPE_SEARCH_PLAYLIST = 'search',
+  TYPE_FAVORI_PLAYLIST = 'favorite',
+}
+
 export default interface Playlist {
   songList: Array<Song>;
   title: string;
@@ -10,9 +16,14 @@ export default interface Playlist {
   subscribeUrl: Array<string>;
   blacklistedUrl: Array<string>;
   useBiliShazam: boolean;
+  lastSubscribed: number;
+  type: string;
 }
 
-export const dummyPlaylist = (title = 'Search'): Playlist => {
+export const dummyPlaylist = (
+  title = 'Search',
+  type = PLAYLIST_ENUMS.TYPE_TYPICA_PLAYLIST
+): Playlist => {
   return {
     songList: [],
     title,
@@ -20,6 +31,8 @@ export const dummyPlaylist = (title = 'Search'): Playlist => {
     subscribeUrl: [],
     blacklistedUrl: [],
     useBiliShazam: false,
+    lastSubscribed: 0,
+    type,
   };
 };
 

@@ -17,16 +17,21 @@ import {
 } from '@react-navigation/drawer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSetupPlayer, Player } from './components/player/View';
+import { v4 as uuidv4 } from 'uuid';
 import Playlist from './components/playlist/View';
 import { styles } from './components/style';
 import { IconButton } from 'react-native-paper';
 import PlayerBottomPanel from './components/player/PlayerProgressControls';
-import { v4 as uuidv4 } from 'uuid';
+import { useNoxSetting } from './hooks/useSetting';
+import { initPlayerObject } from './utils/ChromeStorage';
+import PlaylistDrawer from './components/playlists/View';
 
 const App: React.FC = () => {
   const isPlayerReady = useSetupPlayer();
   const Drawer = createDrawerNavigator();
   const Tab = createMaterialTopTabNavigator();
+  const initPlayer = useNoxSetting(state => state.initPlayer);
+
   function MyTabs() {
     return (
       <React.Fragment>
@@ -56,9 +61,15 @@ const App: React.FC = () => {
   }
 
   useEffect(() => {
+    async function initializePlayer() {
+      await initPlayer(await initPlayerObject());
+    }
+
     function deepLinkHandler(data: { url: string }) {
       console.log('deepLinkHandler', data.url);
     }
+
+    initializePlayer();
 
     // This event will be fired when the app is already open and the notification is clicked
     const subscription = Linking.addEventListener('url', deepLinkHandler);
@@ -81,43 +92,7 @@ const App: React.FC = () => {
 
   return (
     <NavigationContainer>
-      <Drawer.Navigator
-        initialRouteName="Home"
-        drawerContent={props => {
-          return (
-            <DrawerContentScrollView {...props}>
-              <DrawerItemList {...props} />
-              <DrawerItem
-                label=""
-                icon={() => (
-                  <IconButton
-                    icon="plus-circle-outline"
-                    onPress={() => null}
-                    size={20}
-                    style={{ position: 'absolute', right: 120 }}
-                  />
-                )}
-                onPress={() => console.log('add playlist')}
-              />
-              {[...Array(23).keys()].map(val => (
-                <DrawerItem
-                  label={String(val)}
-                  onPress={() => console.log(`playlist${val}`)}
-                  icon={() => (
-                    <IconButton
-                      icon="close"
-                      onPress={() => console.log('delete')}
-                      size={20}
-                      style={{ position: 'absolute', right: 10 }}
-                    />
-                  )}
-                  key={uuidv4()}
-                />
-              ))}
-            </DrawerContentScrollView>
-          );
-        }}
-      >
+      <Drawer.Navigator initialRouteName="Home" drawerContent={PlaylistDrawer}>
         <Drawer.Screen
           name="Home"
           component={MyTabs}

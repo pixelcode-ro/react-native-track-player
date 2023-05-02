@@ -13,6 +13,7 @@ import { PlayPauseButton } from './PlayPauseButton';
 import { useNoxSetting } from '../../hooks/useSetting';
 import { playlistToTracklist } from '../../objects/Playlist';
 import { NoxRepeatMode } from './enums/repeatMode';
+import { savePlayMode } from '../../utils/ChromeStorage';
 
 const performSkipToNext = () => TrackPlayer.skipToNext();
 const performSkipToPrevious = () => TrackPlayer.skipToPrevious();
@@ -20,7 +21,11 @@ const performSkipToPrevious = () => TrackPlayer.skipToPrevious();
 export const PlayerControls: React.FC = () => {
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
   const playmode = useNoxSetting(state => state.playerRepeat);
-  const setPlayMode = useNoxSetting(state => state.setPlayerRepeat);
+  const setPlayerRepeat = useNoxSetting(state => state.setPlayerRepeat);
+  const setPlayMode = (val: string) => {
+    setPlayerRepeat(val);
+    savePlayMode(val);
+  };
   const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
 
   const playback = usePlaybackState();
@@ -36,7 +41,8 @@ export const PlayerControls: React.FC = () => {
       case NoxRepeatMode.SHUFFLE:
         setPlayMode(NoxRepeatMode.REPEAT);
         TrackPlayer.setQueueUninterrupted(
-          playlistToTracklist(currentPlaylist)
+          playlistToTracklist(currentPlaylist),
+          true
         ).then(() => TrackPlayer.getQueue().then(console.log));
         break;
       case NoxRepeatMode.REPEAT:

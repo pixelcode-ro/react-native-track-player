@@ -15,3 +15,8 @@ export const seconds2MMSS = (sec_num: number) => {
     ? `${String(hours)}:${padding(minutes)}:${padding(seconds)}`
     : `${String(minutes)}:${padding(seconds)}`;
 };
+
+export const notNullDefault = (val: any, defaultVal: any) => {
+  if (val) return val;
+  return defaultVal;
+};

@@ -7,6 +7,7 @@ import Song from '../../objects/SongInterface';
 import { seconds2MMSS } from '../../utils/Utils';
 import TrackPlayer from 'react-native-track-player';
 import { playlistToTracklist } from '../../objects/Playlist';
+import { NoxRepeatMode } from '../player/enums/repeatMode';
 
 function SongInfo({
   item,
@@ -21,17 +22,28 @@ function SongInfo({
   const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
   const currentPlayingId = useNoxSetting(state => state.currentPlayingId);
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
+  const playmode = useNoxSetting(state => state.playerRepeat); // performance drain?
 
   const playSong = () => {
     if (String(id) === currentPlayingId) {
       console.log('playlist id same');
     }
     setCurrentPlayingId(String(id));
-    TrackPlayer.setQueue(playlistToTracklist(currentPlaylist, index)).then(
-      () => {
-        TrackPlayer.skip(index);
-      }
-    );
+    let tracks = playlistToTracklist(currentPlaylist, index);
+    if (playmode === NoxRepeatMode.SHUFFLE) {
+      const currentTrack = tracks[index];
+      tracks = [...tracks].sort(() => Math.random() - 0.5);
+      TrackPlayer.setQueue(tracks).then(() => {
+        TrackPlayer.skip(tracks.indexOf(currentTrack)).then(() =>
+          TrackPlayer.play()
+        );
+      });
+    } else {
+      TrackPlayer.setQueue(tracks).then(() => {
+        TrackPlayer.skip(index).then(() => TrackPlayer.play());
+      });
+    }
+
     /**
        * ugly code testing out uninterrupted playlist queue change:
       TrackPlayer.getActiveTrackIndex().then(activeTrackIndex => {

@@ -346,21 +346,7 @@ class MusicModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
                 callback.resolve(null)
             }
         }
-
-    @ReactMethod
-    fun updateTrack(index: Int, map: ReadableMap?, callback: Promise) =
-        scope.launch {
-            if (verifyServiceBoundOrReject(callback)) return@launch
-
-            if (index < 0 || index >= musicService.tracks.size) {
-                callback.reject("index_out_of_bounds", "The index is out of bounds")
-            } else {
-                val track = bundleToTrack(Arguments.toBundle(map))
-                musicService.updateMetadataForTrack(index, track)
-
-                callback.resolve(null)
-            }
-        }
+        
     @ReactMethod
     fun updateNowPlayingMetadata(map: ReadableMap?, callback: Promise) = scope.launch {
         if (verifyServiceBoundOrReject(callback)) return@launch

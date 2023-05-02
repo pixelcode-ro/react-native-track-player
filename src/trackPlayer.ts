@@ -409,7 +409,10 @@ export async function shuffle(): Promise<Track[]> {
  * the currentTrack is at the first element, and add the spliced tracks.
  * @param tracks
  */
-export async function setQueueUninterrupted(tracks: Track[]): Promise<void> {
+export async function setQueueUninterrupted(
+  tracks: Track[],
+  keepOrder = false
+): Promise<void> {
   // if no currentTrack, its a simple setQueue
   const currentTrackIndex = await getActiveTrackIndex();
   console.debug('setQueueU: currentTrackIndex is valid? ', currentTrackIndex);
@@ -434,11 +437,16 @@ export async function setQueueUninterrupted(tracks: Track[]): Promise<void> {
   let removeTrackIndices = [...Array(currentQueue.length).keys()];
   removeTrackIndices.splice(currentTrackIndex, 1);
   await remove(removeTrackIndices);
-  const splicedTracks = tracks
-    .slice(currentTrackNewIndex + 1)
-    .concat(tracks.slice(0, currentTrackNewIndex));
-  console.debug('edited tracks', splicedTracks);
-  await add(splicedTracks);
+  if (keepOrder) {
+    await add(tracks.slice(0, currentTrackNewIndex), 0);
+    await add(tracks.slice(currentTrackNewIndex + 1));
+  } else {
+    const splicedTracks = tracks
+      .slice(currentTrackNewIndex + 1)
+      .concat(tracks.slice(0, currentTrackNewIndex));
+    console.debug('edited tracks', splicedTracks);
+    await add(splicedTracks);
+  }
 }
 
 // MARK: - Getters
