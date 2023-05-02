@@ -1,23 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  View,
-  Text,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Linking, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import {
-  DrawerContentScrollView,
-  DrawerItem,
-  DrawerItemList,
-  createDrawerNavigator,
-} from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSetupPlayer, Player } from './components/player/View';
-import { v4 as uuidv4 } from 'uuid';
 import Playlist from './components/playlist/View';
 import { styles } from './components/style';
 import { IconButton } from 'react-native-paper';
@@ -25,6 +11,8 @@ import PlayerBottomPanel from './components/player/PlayerProgressControls';
 import { useNoxSetting } from './hooks/useSetting';
 import { initPlayerObject } from './utils/ChromeStorage';
 import PlaylistDrawer from './components/playlists/View';
+import { ViewEnum } from './enums/View';
+import Settings from './components/setting/View';
 
 const App: React.FC = () => {
   const isPlayerReady = useSetupPlayer();
@@ -32,31 +20,23 @@ const App: React.FC = () => {
   const Tab = createMaterialTopTabNavigator();
   const initPlayer = useNoxSetting(state => state.initPlayer);
 
-  function MyTabs() {
+  function Player() {
     return (
       <React.Fragment>
         <Tab.Navigator>
           <Tab.Screen
-            name="Player"
+            name={ViewEnum.PLAYER_COVER}
             component={Player}
             options={{ tabBarStyle: { display: 'none' } }}
           />
           <Tab.Screen
-            name="Playlist"
+            name={ViewEnum.PLAYER_PLAYLIST}
             component={Playlist}
             options={{ tabBarStyle: { display: 'none' } }}
           />
         </Tab.Navigator>
         <PlayerBottomPanel />
       </React.Fragment>
-    );
-  }
-
-  function Test() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Article Screen</Text>
-      </View>
     );
   }
 
@@ -94,17 +74,17 @@ const App: React.FC = () => {
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Home" drawerContent={PlaylistDrawer}>
         <Drawer.Screen
-          name="Home"
-          component={MyTabs}
+          name={ViewEnum.PLAYER_HOME}
+          component={Player}
           options={{
             header: () => null,
             drawerIcon: () => <IconButton icon="home-outline" />,
           }}
         />
         <Drawer.Screen
-          name="Settings"
+          name={ViewEnum.LEFT_DRAWER}
           options={{ drawerIcon: () => <IconButton icon="cog" /> }}
-          component={Test}
+          component={Player}
         />
       </Drawer.Navigator>
     </NavigationContainer>

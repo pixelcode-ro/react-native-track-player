@@ -57,6 +57,7 @@ export async function PlaybackService() {
     // replace the current track's url. its not documented? >:/
     if (
       event.index !== undefined &&
+      event.track.song &&
       (event.track.url === NULL_TRACK.url ||
         new Date().getTime() - event.track.urlRefreshTimeStamp > 3600000)
     ) {
