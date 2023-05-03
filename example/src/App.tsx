@@ -26,17 +26,17 @@ const App: React.FC = () => {
   const Tab = createMaterialTopTabNavigator();
   const initPlayer = useNoxSetting(state => state.initPlayer);
 
-  function MyTabs() {
+  function Player() {
     return (
       <React.Fragment>
         <Tab.Navigator>
           <Tab.Screen
-            name="Player"
+            name={ViewEnum.PLAYER_COVER}
             component={Player}
             options={{ tabBarStyle: { display: 'none' } }}
           />
           <Tab.Screen
-            name="Playlist"
+            name={ViewEnum.PLAYER_PLAYLIST}
             component={Playlist}
             options={{ tabBarStyle: { display: 'none' } }}
           />
@@ -80,15 +80,15 @@ const App: React.FC = () => {
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Home" drawerContent={PlaylistDrawer}>
         <Drawer.Screen
-          name="Home"
-          component={MyTabs}
+          name={ViewEnum.PLAYER_HOME}
+          component={Player}
           options={{
             header: () => null,
             drawerIcon: () => <IconButton icon="home-outline" />,
           }}
         />
         <Drawer.Screen
-          name="Settings"
+          name={ViewEnum.LEFT_DRAWER}
           options={{ drawerIcon: () => <IconButton icon="cog" /> }}
           component={Settings}
         />

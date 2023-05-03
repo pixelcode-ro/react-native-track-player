@@ -14,6 +14,7 @@ import { QueueInitialTracksService, SetupService } from '../../services';
 import { styles } from '../style';
 import { IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { ViewEnum } from '../../enums/View';
 
 export function Player() {
   const track = useActiveTrack();
@@ -26,7 +27,9 @@ export function Player() {
         <View style={styles.topBarContainer}>
           <IconButton
             icon="playlist-music"
-            onPress={() => navigation.navigate('Playlist' as never)}
+            onPress={() =>
+              navigation.navigate(ViewEnum.PLAYER_PLAYLIST as never)
+            }
           />
         </View>
         <TrackInfo track={track} />
@@ -45,6 +48,7 @@ export function useSetupPlayer() {
       if (unmounted) return;
       setPlayerReady(true);
       const queue = await TrackPlayer.getQueue();
+      console.log('queue', queue);
       if (unmounted) return;
       if (queue.length <= 0) {
         await QueueInitialTracksService();
