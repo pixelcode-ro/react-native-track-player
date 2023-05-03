@@ -1,23 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   ActivityIndicator,
   Linking,
   SafeAreaView,
-  StatusBar,
-  StyleSheet,
   View,
   Text,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import {
-  DrawerContentScrollView,
-  DrawerItem,
-  DrawerItemList,
-  createDrawerNavigator,
-} from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSetupPlayer, Player } from './components/player/View';
-import { v4 as uuidv4 } from 'uuid';
 import Playlist from './components/playlist/View';
 import { styles } from './components/style';
 import { IconButton } from 'react-native-paper';
@@ -25,6 +17,8 @@ import PlayerBottomPanel from './components/player/PlayerProgressControls';
 import { useNoxSetting } from './hooks/useSetting';
 import { initPlayerObject } from './utils/ChromeStorage';
 import PlaylistDrawer from './components/playlists/View';
+import { ViewEnum } from './enums/View';
+import Settings from './components/setting/View';
 
 const App: React.FC = () => {
   const isPlayerReady = useSetupPlayer();
@@ -49,14 +43,6 @@ const App: React.FC = () => {
         </Tab.Navigator>
         <PlayerBottomPanel />
       </React.Fragment>
-    );
-  }
-
-  function Test() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Article Screen</Text>
-      </View>
     );
   }
 
@@ -104,7 +90,7 @@ const App: React.FC = () => {
         <Drawer.Screen
           name="Settings"
           options={{ drawerIcon: () => <IconButton icon="cog" /> }}
-          component={Test}
+          component={Settings}
         />
       </Drawer.Navigator>
     </NavigationContainer>
