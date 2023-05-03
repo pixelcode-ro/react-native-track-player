@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const Tab = createMaterialTopTabNavigator();
   const initPlayer = useNoxSetting(state => state.initPlayer);
 
-  function Player() {
+  function NoxPlayer() {
     return (
       <React.Fragment>
         <Tab.Navigator>
@@ -81,7 +81,7 @@ const App: React.FC = () => {
       <Drawer.Navigator initialRouteName="Home" drawerContent={PlaylistDrawer}>
         <Drawer.Screen
           name={ViewEnum.PLAYER_HOME}
-          component={Player}
+          component={NoxPlayer}
           options={{
             header: () => null,
             drawerIcon: () => <IconButton icon="home-outline" />,

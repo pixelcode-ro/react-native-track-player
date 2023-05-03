@@ -48,7 +48,7 @@ export async function PlaybackService() {
 
   TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, event => {
     console.log('Event.PlaybackActiveTrackChanged', event);
-    if (!event.track) return;
+    if (!event.track || !event.track.song) return;
     initBiliHeartbeat({
       bvid: event.track.song.bvid,
       cid: event.track.song.id,
@@ -57,7 +57,6 @@ export async function PlaybackService() {
     // replace the current track's url. its not documented? >:/
     if (
       event.index !== undefined &&
-      event.track.song &&
       (event.track.url === NULL_TRACK.url ||
         new Date().getTime() - event.track.urlRefreshTimeStamp > 3600000)
     ) {
