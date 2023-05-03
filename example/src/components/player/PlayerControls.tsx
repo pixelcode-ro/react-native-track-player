@@ -32,7 +32,8 @@ export const PlayerControls: React.FC = () => {
 
   // HACK:  this shouldnt be here, but where?
   useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], event => {
-    if (event.track) setCurrentPlayingId(event.track.song.id);
+    if (event.track && event.track.song)
+      setCurrentPlayingId(event.track.song.id);
     else setCurrentPlayingId('');
   });
 

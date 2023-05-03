@@ -48,7 +48,16 @@ export default ({
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={handleClose}>
+      <Dialog
+        visible={visible}
+        onDismiss={handleClose}
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: 0,
+          right: 0,
+        }}
+      >
         <Dialog.Title>Create New Playlist...</Dialog.Title>
         <Dialog.Content>
           <TextInput

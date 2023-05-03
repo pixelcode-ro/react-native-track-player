@@ -1,24 +1,19 @@
 import React, { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  SafeAreaView,
-  View,
-  Text,
-} from 'react-native';
+import { ActivityIndicator, Linking, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSetupPlayer, Player } from './components/player/View';
 import Playlist from './components/playlist/View';
 import { styles } from './components/style';
-import { IconButton } from 'react-native-paper';
+import { IconButton, Portal } from 'react-native-paper';
 import PlayerBottomPanel from './components/player/PlayerProgressControls';
 import { useNoxSetting } from './hooks/useSetting';
 import { initPlayerObject } from './utils/ChromeStorage';
 import PlaylistDrawer from './components/playlists/View';
 import { ViewEnum } from './enums/View';
 import Settings from './components/setting/View';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App: React.FC = () => {
   const isPlayerReady = useSetupPlayer();
@@ -77,23 +72,34 @@ const App: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Home" drawerContent={PlaylistDrawer}>
-        <Drawer.Screen
-          name={ViewEnum.PLAYER_HOME}
-          component={NoxPlayer}
-          options={{
-            header: () => null,
-            drawerIcon: () => <IconButton icon="home-outline" />,
-          }}
-        />
-        <Drawer.Screen
-          name={ViewEnum.LEFT_DRAWER}
-          options={{ drawerIcon: () => <IconButton icon="cog" /> }}
-          component={Settings}
-        />
-      </Drawer.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Portal.Host>
+          <Drawer.Navigator
+            initialRouteName="Home"
+            drawerContent={PlaylistDrawer}
+          >
+            <Drawer.Screen
+              name={ViewEnum.PLAYER_HOME}
+              component={NoxPlayer}
+              options={{
+                header: () => null,
+                title: 'Home',
+                drawerIcon: () => <IconButton icon="home-outline" />,
+              }}
+            />
+            <Drawer.Screen
+              name={ViewEnum.LEFT_DRAWER}
+              options={{
+                drawerIcon: () => <IconButton icon="cog" />,
+                title: 'Settings',
+              }}
+              component={Settings}
+            />
+          </Drawer.Navigator>
+        </Portal.Host>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
 

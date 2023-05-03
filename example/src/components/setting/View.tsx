@@ -1,13 +1,9 @@
-import { createStackNavigator } from '@react-navigation/stack';
-import {
-  View,
-  Text,
-} from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { View, Text } from 'react-native';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default () => {
-
   function Settings() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -21,4 +17,4 @@ export default () => {
       <Stack.Screen name="Home" component={Settings} />
     </Stack.Navigator>
   );
-}
+};

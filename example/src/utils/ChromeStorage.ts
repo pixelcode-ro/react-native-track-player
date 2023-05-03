@@ -15,7 +15,7 @@ import { NoxRepeatMode } from '../components/player/enums/repeatMode';
 // see known storage limits: https://react-native-async-storage.github.io/async-storage/docs/limits
 const MAX_SONGLIST_SIZE = 400;
 
-enum STORAGE_KEYS {
+export enum STORAGE_KEYS {
   PLAYER_SETTING_KEY = 'PlayerSetting',
   FAVORITE_PLAYLIST_KEY = 'FavFavList-Special',
   SEARCH_PLAYLIST_KEY = 'SearchPlaylist-Special',
@@ -227,6 +227,12 @@ export const initPlayerObject = async (): Promise<PlayerStorageObject> => {
       NoxRepeatMode.SHUFFLE
     ),
   } as PlayerStorageObject;
+
+  playerObject.playlists[STORAGE_KEYS.SEARCH_PLAYLIST_KEY] =
+    playerObject.searchPlaylist;
+  playerObject.playlists[STORAGE_KEYS.FAVORITE_PLAYLIST_KEY] =
+    playerObject.favoriPlaylist;
+
   await Promise.all(
     playerObject.playlistIds.map(async id => {
       const retrievedPlaylist = await getPlaylist(id);
