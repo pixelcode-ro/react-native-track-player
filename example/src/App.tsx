@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Linking, SafeAreaView } from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  SafeAreaView,
+  View,
+  Text,
+} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -84,7 +90,7 @@ const App: React.FC = () => {
         <Drawer.Screen
           name={ViewEnum.LEFT_DRAWER}
           options={{ drawerIcon: () => <IconButton icon="cog" /> }}
-          component={Player}
+          component={Settings}
         />
       </Drawer.Navigator>
     </NavigationContainer>
