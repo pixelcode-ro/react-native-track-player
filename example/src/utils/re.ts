@@ -382,7 +382,6 @@ export const reExtractSongName = (
       break;
     default:
   }
-  // console.debug('resorting to default songname extract', filename, uploader);
   // if fails, first try to extract in brackets; else return as is.
   return extractSongName(filename);
 };

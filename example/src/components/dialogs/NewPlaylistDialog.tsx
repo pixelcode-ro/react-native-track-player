@@ -13,7 +13,7 @@ import { useNoxSetting } from '../../hooks/useSetting';
 
 interface props {
   visible: boolean;
-  fromList: Playlist | null;
+  fromList?: Playlist;
   onClose?: () => void;
   onSubmit?: () => void;
 }
@@ -28,6 +28,7 @@ export default ({
   const addPlaylist = useNoxSetting(state => state.addPlaylist);
 
   const handleClose = () => {
+    console.log('dfsfsf');
     setPlaylistName('');
     onClose();
   };
@@ -42,6 +43,7 @@ export default ({
           title: playlistName,
         }
       : { ...dummyList, title: playlistName };
+    console.log(newList, fromList);
     addPlaylist(newList);
     onSubmit();
   };
@@ -58,7 +60,11 @@ export default ({
           right: 0,
         }}
       >
-        <Dialog.Title>Create New Playlist...</Dialog.Title>
+        <Dialog.Title>
+          {fromList
+            ? `Create ${fromList.title} as New Playlist...`
+            : 'Create New Playlist...'}
+        </Dialog.Title>
         <Dialog.Content>
           <TextInput
             style={{ flex: 5 }}

@@ -25,10 +25,10 @@ function SongInfo({
   const playmode = useNoxSetting(state => state.playerRepeat); // performance drain?
 
   const playSong = () => {
-    if (String(id) === currentPlayingId) {
+    if (id === currentPlayingId) {
       console.log('playlist id same');
     }
-    setCurrentPlayingId(String(id));
+    setCurrentPlayingId(id);
     let tracks = playlistToTracklist(currentPlaylist, index);
     if (playmode === NoxRepeatMode.SHUFFLE) {
       const currentTrack = tracks[index];
@@ -104,4 +104,4 @@ function SongInfo({
     </View>
   );
 }
-export default React.memo(SongInfo);
+export default SongInfo;

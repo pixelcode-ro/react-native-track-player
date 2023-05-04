@@ -4,7 +4,6 @@ import { FlashList } from '@shopify/flash-list';
 import { styles } from '../style';
 import SongInfo from './SongInfo';
 import { useNoxSetting } from '../../hooks/useSetting';
-import { Dimensions } from 'react-native';
 
 /*
 import Song, { dummySong } from '../../objects/SongInterface';
@@ -34,7 +33,7 @@ export default () => {
             currentPlaying={item.id === currentPlayingId}
           />
         )}
-        keyExtractor={item => String(item.id)}
+        keyExtractor={item => item.id}
         estimatedItemSize={20}
         extraData={currentPlayingId}
       />

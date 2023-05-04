@@ -5,7 +5,9 @@ import { NoxRepeatMode } from '../components/player/enums/repeatMode';
 import {
   DEFAULT_SETTING,
   PlayerStorageObject,
-  removePlaylist,
+  STORAGE_KEYS,
+  delPlaylist,
+  saveFavPlaylist,
   savePlaylist,
   savePlaylistIds,
 } from '../utils/ChromeStorage';
@@ -34,7 +36,7 @@ interface NoxSetting {
   setNewPlaylistWindowVisible: (val: boolean) => void;
 
   addPlaylist: (val: Playlist) => void;
-  removePlaylist: (val: Playlist) => void;
+  removePlaylist: (val: string) => void;
   updatePlaylist: (val: Playlist) => void;
 
   initPlayer: (val: PlayerStorageObject) => Promise<void>;
@@ -49,9 +51,18 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
   currentPlaylist: dummyPlaylist(),
   setCurrentPlaylist: (val: Playlist) => set({ currentPlaylist: val }),
   searchPlaylist: dummyPlaylist(),
-  setSearchPlaylist: (val: Playlist) => set({ searchPlaylist: val }),
+  setSearchPlaylist: (val: Playlist) => {
+    let playlists = get().playlists;
+    playlists[STORAGE_KEYS.SEARCH_PLAYLIST_KEY] = val;
+    set({ searchPlaylist: val, playlists });
+  },
   favoritePlaylist: dummyPlaylist(),
-  setFavoritePlaylist: (val: Playlist) => set({ favoritePlaylist: val }),
+  setFavoritePlaylist: (val: Playlist) => {
+    let playlists = get().playlists;
+    playlists[STORAGE_KEYS.FAVORITE_PLAYLIST_KEY] = val;
+    saveFavPlaylist(val);
+    set({ favoritePlaylist: val, playlists });
+  },
 
   playerRepeat: NoxRepeatMode.SHUFFLE,
   setPlayerRepeat: (val: string) => set({ playerRepeat: val }),
@@ -71,13 +82,18 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
     savePlaylist(playlist);
     savePlaylistIds(playlistIds);
   },
-  removePlaylist: (playlist: Playlist) => {
+  removePlaylist: (playlistId: string) => {
     let playlistIds = get().playlistIds;
     let playlists = get().playlists;
-    delete playlists[playlist.id];
-    removePlaylist(playlist, playlistIds).then(() =>
-      set({ playlists, playlistIds })
-    );
+    const currentPlaylist = get().currentPlaylist;
+    if (currentPlaylist.id === playlistId) {
+      set({ currentPlaylist: playlists[STORAGE_KEYS.SEARCH_PLAYLIST_KEY] });
+    }
+    delPlaylist(playlists[playlistId], playlistIds).then(() => {
+      delete playlists[playlistId];
+      playlistIds = playlistIds.filter(v => v !== playlistId);
+      set({ playlists, playlistIds });
+    });
   },
   updatePlaylist: (playlist: Playlist) => {
     let playlists = get().playlists;

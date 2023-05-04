@@ -3,6 +3,7 @@ import { strToU8, strFromU8, compressSync, decompressSync } from 'fflate';
 import Playlist, { dummyPlaylist, PLAYLIST_ENUMS } from '../objects/Playlist';
 import { notNullDefault } from './Utils';
 import { NoxRepeatMode } from '../components/player/enums/repeatMode';
+import Song from '../objects/SongInterface';
 /**
  * the ChromeStorage has quite a few changes; mainly to abandon the storageCtxMgr
  * context and use zustand instead. if i'm getting rid of storageCtxMgr there is
@@ -148,9 +149,10 @@ export const getPlaylist = async (key: string): Promise<null | Playlist> => {
     // eslint-disable-next-line prefer-const
     let retrievedPlaylist = await getItem(key);
     if (retrievedPlaylist === null) return null;
-    retrievedPlaylist.songList = await Promise.all(
+    retrievedPlaylist.songList = (await Promise.all(
       retrievedPlaylist.songList.map(async (val: string) => await getItem(val))
-    );
+    )) as Array<Song[]>;
+    retrievedPlaylist.songList = retrievedPlaylist.songList.flat();
     return retrievedPlaylist;
   } catch (e) {
     console.error(e);
@@ -177,7 +179,7 @@ export const addPlaylist = async (
   return playlistIds;
 };
 
-export const removePlaylist = async (
+export const delPlaylist = async (
   playlist: Playlist,
   playlistIds: Array<string>
 ) => {
