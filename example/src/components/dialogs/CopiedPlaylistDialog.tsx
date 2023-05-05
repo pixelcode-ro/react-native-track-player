@@ -42,10 +42,10 @@ export default ({
       return;
     }
     const toList = playlists[playlistIds[playlistIndex]];
-    updatePlaylist({
-      ...toList,
-      songList: toList.songList.concat(fromList.songList),
-    });
+    updatePlaylist(
+      toList, 
+      fromList.songList
+    );
     onSubmit();
   };
 

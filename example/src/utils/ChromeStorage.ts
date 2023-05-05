@@ -5,15 +5,18 @@ import { notNullDefault } from './Utils';
 import { NoxRepeatMode } from '../components/player/enums/repeatMode';
 import Song from '../objects/SongInterface';
 /**
- * the ChromeStorage has quite a few changes; mainly to abandon the storageCtxMgr
- * context and use zustand instead. if i'm getting rid of storageCtxMgr there is
+ * noxplayer's storage handler.
+ * ChromeStorage has quite a few changes from azusa player the chrome extension;
+ * mainly to abandon the storageCtxMgr context and use zustand instead. 
+ * if i'm getting rid of storageCtxMgr there is
  * no point migrating noxplayer storage.js.
  *
  * I will try to make noxplayer's settings compatible but some fields eg. Song.duration
  * are missing.
  */
 
-// see known storage limits: https://react-native-async-storage.github.io/async-storage/docs/limits
+// see known storage limits: 
+// https://react-native-async-storage.github.io/async-storage/docs/limits
 const MAX_SONGLIST_SIZE = 400;
 
 export enum STORAGE_KEYS {
@@ -118,7 +121,8 @@ const chunkArray = (
 };
 
 /**
- * see known storage limits: https://react-native-async-storage.github.io/async-storage/docs/limits
+ * see known storage limits:
+ * https://react-native-async-storage.github.io/async-storage/docs/limits
  * playlist can get quite large, my idea is to splice songlist into smaller lists then join them.
  * @param playlist
  * @returns

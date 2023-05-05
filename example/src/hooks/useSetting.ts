@@ -13,8 +13,18 @@ import {
 } from '../utils/ChromeStorage';
 import { notNullDefault } from '../utils/Utils';
 import { PlayerSettingDict } from '../utils/ChromeStorage';
+import Song from '../objects/SongInterface';
+
+interface coordinates {
+  x: number,
+  y: number,
+}
 
 interface NoxSetting {
+
+  songMenuCoords: coordinates,
+  playlistMenuCoords: coordinates,
+
   currentPlayingId: string | null;
   setCurrentPlayingId: (val: string) => void;
   playlists: { [key: string]: Playlist };
@@ -32,17 +42,32 @@ interface NoxSetting {
   playerSetting: PlayerSettingDict;
   setPlayerSetting: (val: PlayerSettingDict) => void;
 
-  newPlaylistWindowVisible: boolean;
-  setNewPlaylistWindowVisible: (val: boolean) => void;
-
   addPlaylist: (val: Playlist) => void;
   removePlaylist: (val: string) => void;
-  updatePlaylist: (val: Playlist) => void;
+  /**
+   * updates a playlist with songs added and removed, and saves it. addSongs are padded to the bottom.
+   * manipulate val before this function to add songs in whatever order desired.
+   * @param val 
+   * @param addSongs 
+   * @param removeSongs 
+   * @returns 
+   */
+  updatePlaylist: (val: Playlist, addSongs: Array<Song>, removeSongs: Array<Song>) => void;
 
   initPlayer: (val: PlayerStorageObject) => Promise<void>;
 }
 
+/**
+ * store manager of noxplayer. exposes state setter and getter functions,
+ * as well as saving and loading states to/from asyncStorage.
+ */
 export const useNoxSetting = create<NoxSetting>((set, get) => ({
+
+  songMenuCoords: {x: 0, y: 0},
+  setSongMenuCoords: (val: coordinates) => set({ songMenuCoords: val }),
+  playlistMenuCoords: {x: 0, y: 0},
+  setPlaylistMenuCoords: (val: coordinates) => set({ playlistMenuCoords: val }),
+
   currentPlayingId: null,
   setCurrentPlayingId: (val: string) => set({ currentPlayingId: val }),
   playlists: {},
@@ -69,10 +94,6 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
   playerSetting: DEFAULT_SETTING,
   setPlayerSetting: (val: PlayerSettingDict) => set({ playerSetting: val }),
 
-  newPlaylistWindowVisible: false,
-  setNewPlaylistWindowVisible: (val: boolean) =>
-    set({ newPlaylistWindowVisible: val }),
-
   addPlaylist: (playlist: Playlist) => {
     let playlistIds = get().playlistIds;
     let playlists = get().playlists;
@@ -95,15 +116,16 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
       set({ playlists, playlistIds });
     });
   },
-  updatePlaylist: (playlist: Playlist) => {
+
+  updatePlaylist: (playlist: Playlist, addSongs: Array<Song> = [], removeSongs: Array<Song> = []) => {
     let playlists = get().playlists;
+    playlist.songList = playlist.songList.concat(addSongs).filter(v => !removeSongs.includes(v));
     playlists[playlist.id] = playlist;
     set({ playlists });
     savePlaylist(playlist);
   },
 
   initPlayer: async (val: PlayerStorageObject) => {
-    console.log('initplayer');
     set({ currentPlayingId: val.lastPlaylistId[1] });
     set({
       currentPlaylist: notNullDefault(
