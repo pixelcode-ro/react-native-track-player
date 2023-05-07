@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { styles } from '../style';
+import { IconButton, Text } from 'react-native-paper';
+import { Dimensions } from 'react-native';
 import SongInfo from './SongInfo';
 import { useNoxSetting } from '../../hooks/useSetting';
-import { IconButton, Text } from 'react-native-paper';
 import { seconds2HHMMSS } from '../../utils/Utils';
 import SongMenu from './SongMenu';
 import Song from '../../objects/SongInterface';
@@ -143,6 +144,8 @@ export default () => {
         style={{
           ...styles.topBarContainer,
           flex: 4,
+          // HACK: this should be justified as top bar and bottom bar all have a defined height.
+          maxHeight: Dimensions.get('window').height - 250,
         }}
       >
         <FlashList

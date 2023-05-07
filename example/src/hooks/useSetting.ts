@@ -52,6 +52,7 @@ interface NoxSetting {
   /**
    * updates a playlist with songs added and removed, and saves it. addSongs are padded to the bottom.
    * manipulate val before this function to add songs in whatever order desired.
+   * note this function does mutate playlist.
    * @param val
    * @param addSongs
    * @param removeSongs
@@ -133,12 +134,6 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
     });
   },
 
-  /**
-   * note this function does mutate playlist.
-   * @param playlist
-   * @param addSongs
-   * @param removeSongs
-   */
   updatePlaylist: (
     playlist: Playlist,
     addSongs: Array<Song> = [],
