@@ -34,7 +34,6 @@ function SongInfo({
   const playmode = useNoxSetting(state => state.playerRepeat); // performance drain?
   const setSongMenuCoords = useNoxSetting(state => state.setSongMenuCoords);
   const setSongMenuVisible = useNoxSetting(state => state.setSongMenuVisible);
-  const setPlaylistLoading = useNoxSetting(state => state.setPlaylistLoading);
   const setSongMenuSongIndexes = useNoxSetting(
     state => state.setSongMenuSongIndexes
   );
@@ -45,7 +44,6 @@ function SongInfo({
   // use a boolean flag to make a loading screen?
   const playSong = async () => {
     const reloadPlaylistAndPlay = () => {
-      setPlaylistLoading(true);
       let tracks = playlistToTracklist(currentPlaylist, index);
       if (playmode === NoxRepeatMode.SHUFFLE) {
         const currentTrack = tracks[index];
@@ -60,7 +58,6 @@ function SongInfo({
           TrackPlayer.skip(index).then(() => TrackPlayer.play());
         });
       }
-      setPlaylistLoading(false);
     };
 
     setCurrentPlayingId(id);

@@ -26,6 +26,8 @@ export default () => {
   const [searching, setSearching] = useState(false);
   const [shouldReRender, setShouldReRender] = useState(false);
   const [currentRows, setCurrentRows] = useState<Song[]>([]);
+  // HACK: fairly sure this is not supposed to be like this, but here we are...
+  const searchRef = React.useRef<any>(null);
   const playlistShouldReRender = useNoxSetting(
     state => state.playlistShouldReRender
   );
