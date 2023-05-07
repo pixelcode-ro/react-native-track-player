@@ -33,3 +33,5 @@ export const dummySong = (): Song => {
     duration: 0,
   };
 };
+
+export const dummySongObj = dummySong();

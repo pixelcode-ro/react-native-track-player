@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { IconButton, Text } from 'react-native-paper';
-import { View, Pressable } from 'react-native';
+import { Checkbox, IconButton, Text } from 'react-native-paper';
+import { View, Pressable, GestureResponderEvent } from 'react-native';
+import TrackPlayer from 'react-native-track-player';
 import { useNoxSetting } from '../../hooks/useSetting';
 import { styles } from '../style';
 import Song from '../../objects/SongInterface';
 import { seconds2MMSS } from '../../utils/Utils';
-import TrackPlayer from 'react-native-track-player';
 import { playlistToTracklist } from '../../objects/Playlist';
 import { NoxRepeatMode } from '../player/enums/repeatMode';
 
@@ -13,37 +13,70 @@ function SongInfo({
   item,
   index,
   currentPlaying,
+  checking = false,
+  checkedProp = false,
+  onChecked = () => void 0,
 }: {
   item: Song;
   index: number;
   currentPlaying: boolean;
+  checking?: boolean;
+  checkedProp?: boolean;
+  onChecked?: () => void;
 }) {
   const [title, id, artist] = [item.parsedName, item.id, item.singer];
   const setCurrentPlayingId = useNoxSetting(state => state.setCurrentPlayingId);
-  const currentPlayingId = useNoxSetting(state => state.currentPlayingId);
   const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
+  const currentPlayingList = useNoxSetting(state => state.currentPlayingList);
+  const setCurrentPlayingList = useNoxSetting(
+    state => state.setCurrentPlayingList
+  );
   const playmode = useNoxSetting(state => state.playerRepeat); // performance drain?
+  const setSongMenuCoords = useNoxSetting(state => state.setSongMenuCoords);
+  const setSongMenuVisible = useNoxSetting(state => state.setSongMenuVisible);
+  const setPlaylistLoading = useNoxSetting(state => state.setPlaylistLoading);
+  const setSongMenuSongIndexes = useNoxSetting(
+    state => state.setSongMenuSongIndexes
+  );
+  const [checked, setChecked] = React.useState(false);
 
-  const playSong = () => {
-    if (id === currentPlayingId) {
-      console.log('playlist id same');
-    }
+  // TODO: useCallback? [currentPlaylist, currentPlayingList, playMode, index]
+  // TODO: can i somehow shove most of these into an async promise, then
+  // use a boolean flag to make a loading screen?
+  const playSong = async () => {
+    const reloadPlaylistAndPlay = () => {
+      setPlaylistLoading(true);
+      let tracks = playlistToTracklist(currentPlaylist, index);
+      if (playmode === NoxRepeatMode.SHUFFLE) {
+        const currentTrack = tracks[index];
+        tracks = [...tracks].sort(() => Math.random() - 0.5);
+        TrackPlayer.setQueue(tracks).then(() => {
+          TrackPlayer.skip(tracks.indexOf(currentTrack)).then(() =>
+            TrackPlayer.play()
+          );
+        });
+      } else {
+        TrackPlayer.setQueue(tracks).then(() => {
+          TrackPlayer.skip(index).then(() => TrackPlayer.play());
+        });
+      }
+      setPlaylistLoading(false);
+    };
+
     setCurrentPlayingId(id);
-    let tracks = playlistToTracklist(currentPlaylist, index);
-    if (playmode === NoxRepeatMode.SHUFFLE) {
-      const currentTrack = tracks[index];
-      tracks = [...tracks].sort(() => Math.random() - 0.5);
-      TrackPlayer.setQueue(tracks).then(() => {
-        TrackPlayer.skip(tracks.indexOf(currentTrack)).then(() =>
-          TrackPlayer.play()
-        );
-      });
+    if (currentPlaylist.id !== currentPlayingList) {
+      setCurrentPlayingList(currentPlaylist.id);
+      reloadPlaylistAndPlay();
     } else {
-      TrackPlayer.setQueue(tracks).then(() => {
-        TrackPlayer.skip(index).then(() => TrackPlayer.play());
+      TrackPlayer.getQueue().then(tracks => {
+        const trackIndex = tracks.findIndex(track => track.song.id === id);
+        if (trackIndex === -1) {
+          reloadPlaylistAndPlay();
+        } else {
+          TrackPlayer.skip(trackIndex).then(() => TrackPlayer.play());
+        }
       });
     }
-
     /**
        * ugly code testing out uninterrupted playlist queue change:
       TrackPlayer.getActiveTrackIndex().then(activeTrackIndex => {
@@ -68,6 +101,17 @@ function SongInfo({
        */
   };
 
+  const toggleCheck = () => {
+    setChecked(val => !val);
+    onChecked();
+  };
+
+  React.useEffect(() => {
+    if (checked !== checkedProp) {
+      setChecked(checkedProp);
+    }
+  }, [checkedProp]);
+
   return (
     <View
       style={{
@@ -77,8 +121,16 @@ function SongInfo({
         backgroundColor: currentPlaying ? 'lightgrey' : 'white',
       }}
     >
-      <View style={{ flex: 5 }}>
-        <Pressable onPress={playSong}>
+      {checking && (
+        <View style={{ flex: 1 }}>
+          <Checkbox
+            status={checked ? 'checked' : 'unchecked'}
+            onPress={toggleCheck}
+          />
+        </View>
+      )}
+      <View style={{ flex: 4.9 }}>
+        <Pressable onPress={checking ? toggleCheck : playSong}>
           <Text variant="titleMedium">{`${String(index + 1)}. ${title}`}</Text>
           <Text variant="titleSmall" style={{ color: 'grey' }}>
             {artist}
@@ -97,11 +149,20 @@ function SongInfo({
         </Text>
         <IconButton
           icon="dots-vertical"
-          onPress={() => console.log}
+          onPress={(event: GestureResponderEvent) => {
+            if (!checking) {
+              setSongMenuSongIndexes([index]);
+            }
+            setSongMenuVisible(true);
+            setSongMenuCoords({
+              x: event.nativeEvent.pageX,
+              y: event.nativeEvent.pageY,
+            });
+          }}
           size={20}
         />
       </View>
     </View>
   );
 }
-export default SongInfo;
+export default React.memo(SongInfo);

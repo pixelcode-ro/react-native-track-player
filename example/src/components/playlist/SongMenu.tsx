@@ -1,37 +1,110 @@
 import * as React from 'react';
-import {
-    Menu,
-  } from 'react-native-paper';
+import { Menu } from 'react-native-paper';
 import { useNoxSetting } from '../../hooks/useSetting';
-import Song from '../../objects/SongInterface';
+import { CopiedPlaylistMenuItem } from '../buttons/CopiedPlaylistButton';
+import { RenameSongMenuItem } from '../buttons/RenameSongButton';
 
 enum ICONS {
-  SEND_TO = '',
+  SEND_TO = 'playlist-plus',
   COPY_SONG_NAME = '',
-  COPY_SONG_URL  = '',
+  COPY_SONG_URL = '',
   GOTO_BILIBILI = '',
   SEARCH_IN_PLAYLIST = '',
   RENAME = '',
   RELOAD = '',
-  REMOVE = '',
+  REMOVE = 'delete',
   REMOVE_AND_BAN_BVID = '',
 }
 
-export default (visible: boolean, setVisible: (val: boolean) => void, song: Song) => {
-    const menuCoord = useNoxSetting(state => state.songMenuCoords);
-    return (
-        <Menu
-            visible={visible}
-            onDismiss={() => setVisible(false)}
-            anchor={menuCoord}
-          >
-            <Menu.Item leadingIcon={ICONS.SEND_TO} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.SEARCH_IN_PLAYLIST} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.RENAME} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.GOTO_BILIBILI} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.RELOAD} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.REMOVE} onPress={() => {}} title="Undo" />
-            <Menu.Item leadingIcon={ICONS.REMOVE_AND_BAN_BVID} onPress={() => {}} title="Undo" />
-          </Menu>
-    )
+interface props {
+  checking?: boolean;
+  checked?: boolean[];
+  resetChecked?: () => void;
 }
+
+export default ({
+  checking = false,
+  checked = [],
+  resetChecked = () => void 0,
+}: props) => {
+  const songMenuVisible = useNoxSetting(state => state.songMenuVisible);
+  const setSongMenuVisible = useNoxSetting(state => state.setSongMenuVisible);
+  const menuCoord = useNoxSetting(state => state.songMenuCoords);
+  const songMenuSongIndexes = useNoxSetting(state => state.songMenuSongIndexes);
+  const currentPlaylist = useNoxSetting(state => state.currentPlaylist);
+  const updatePlaylist = useNoxSetting(state => state.updatePlaylist);
+
+  const closeMenu = React.useCallback(() => setSongMenuVisible(false), []);
+
+  const selectedSongIndexes = () => {
+    if (checking) {
+      const result = checked
+        .map((val, index) => {
+          if (val) {
+            return index;
+          }
+        })
+        .filter(val => val !== undefined);
+      if (result.length > 0) {
+        return result;
+      }
+    }
+    return songMenuSongIndexes;
+  };
+
+  const selectedSongs = () => {
+    return selectedSongIndexes().map(index => currentPlaylist.songList[index!]);
+  };
+
+  const selectedPlaylist = () => {
+    const songs = selectedSongs();
+    return {
+      ...currentPlaylist,
+      songList: songs,
+      title: songs.length > 1 ? 'Selected songs' : songs[0].parsedName,
+    };
+  };
+
+  const renameSong = (rename: string) => {
+    // i sure hope this doesnt break anything...
+    const song = currentPlaylist.songList[songMenuSongIndexes[0]];
+    song.name = song.parsedName = rename;
+    updatePlaylist(currentPlaylist, [], []);
+  };
+
+  return (
+    <Menu visible={songMenuVisible} onDismiss={closeMenu} anchor={menuCoord}>
+      <CopiedPlaylistMenuItem
+        getFromListOnClick={selectedPlaylist}
+        onSubmit={closeMenu}
+      />
+      <Menu.Item
+        leadingIcon={ICONS.REMOVE}
+        onPress={() => {
+          // TODO: necessary to add an alert dialog?
+          updatePlaylist(currentPlaylist, [], selectedSongs());
+          setSongMenuVisible(false);
+          resetChecked();
+        }}
+        title="Remove"
+      />
+      <RenameSongMenuItem
+        getSongOnClick={() => selectedSongs()[0]}
+        disabled={checking}
+        onSubmit={renameSong}
+      />
+      <Menu.Item
+        leadingIcon={ICONS.SEARCH_IN_PLAYLIST}
+        onPress={closeMenu}
+        title="Undo"
+      />
+      <Menu.Item leadingIcon={ICONS.RENAME} onPress={closeMenu} title="Undo" />
+      <Menu.Item leadingIcon={ICONS.RELOAD} onPress={closeMenu} title="Undo" />
+      <Menu.Item
+        leadingIcon={ICONS.REMOVE_AND_BAN_BVID}
+        onPress={closeMenu}
+        title="Undo"
+      />
+    </Menu>
+  );
+};

@@ -14,22 +14,27 @@ import {
 import { notNullDefault } from '../utils/Utils';
 import { PlayerSettingDict } from '../utils/ChromeStorage';
 import Song from '../objects/SongInterface';
-
-interface coordinates {
-  x: number,
-  y: number,
-}
+import coordinates from '../objects/Coordinate';
 
 interface NoxSetting {
-
-  songMenuCoords: coordinates,
-  playlistMenuCoords: coordinates,
+  songMenuCoords: coordinates;
+  setSongMenuCoords: (val: coordinates) => void;
+  songMenuVisible: boolean;
+  setSongMenuVisible: (val: boolean) => void;
+  songMenuSongIndexes: Array<number>;
+  setSongMenuSongIndexes: (val: Array<number>) => void;
+  // HACK: i'm out of my wits but heres what i got to force rerender playlist...
+  playlistShouldReRender: boolean;
+  togglePlaylistShouldReRender: () => void;
 
   currentPlayingId: string | null;
   setCurrentPlayingId: (val: string) => void;
+  currentPlayingList: string | null;
+  setCurrentPlayingList: (val: string) => void;
   playlists: { [key: string]: Playlist };
   playlistIds: Array<string>;
 
+  // TODO: maybe this should be a string instead...
   currentPlaylist: Playlist;
   setCurrentPlaylist: (val: Playlist) => void;
   searchPlaylist: Playlist;
@@ -47,12 +52,16 @@ interface NoxSetting {
   /**
    * updates a playlist with songs added and removed, and saves it. addSongs are padded to the bottom.
    * manipulate val before this function to add songs in whatever order desired.
-   * @param val 
-   * @param addSongs 
-   * @param removeSongs 
-   * @returns 
+   * @param val
+   * @param addSongs
+   * @param removeSongs
+   * @returns
    */
-  updatePlaylist: (val: Playlist, addSongs: Array<Song>, removeSongs: Array<Song>) => void;
+  updatePlaylist: (
+    val: Playlist,
+    addSongs: Array<Song>,
+    removeSongs: Array<Song>
+  ) => void;
 
   initPlayer: (val: PlayerStorageObject) => Promise<void>;
 }
@@ -62,14 +71,21 @@ interface NoxSetting {
  * as well as saving and loading states to/from asyncStorage.
  */
 export const useNoxSetting = create<NoxSetting>((set, get) => ({
-
-  songMenuCoords: {x: 0, y: 0},
+  songMenuCoords: { x: 0, y: 0 },
   setSongMenuCoords: (val: coordinates) => set({ songMenuCoords: val }),
-  playlistMenuCoords: {x: 0, y: 0},
-  setPlaylistMenuCoords: (val: coordinates) => set({ playlistMenuCoords: val }),
+  songMenuVisible: false,
+  setSongMenuVisible: (val: boolean) => set({ songMenuVisible: val }),
+  songMenuSongIndexes: [],
+  setSongMenuSongIndexes: (val: Array<number>) =>
+    set({ songMenuSongIndexes: val }),
+  playlistShouldReRender: false,
+  togglePlaylistShouldReRender: () =>
+    set({ playlistShouldReRender: !get().playlistShouldReRender }),
 
   currentPlayingId: null,
   setCurrentPlayingId: (val: string) => set({ currentPlayingId: val }),
+  currentPlayingList: null,
+  setCurrentPlayingList: (val: string) => set({ currentPlayingList: val }),
   playlists: {},
   playlistIds: [],
 
@@ -117,16 +133,37 @@ export const useNoxSetting = create<NoxSetting>((set, get) => ({
     });
   },
 
-  updatePlaylist: (playlist: Playlist, addSongs: Array<Song> = [], removeSongs: Array<Song> = []) => {
+  /**
+   * note this function does mutate playlist.
+   * @param playlist
+   * @param addSongs
+   * @param removeSongs
+   */
+  updatePlaylist: (
+    playlist: Playlist,
+    addSongs: Array<Song> = [],
+    removeSongs: Array<Song> = []
+  ) => {
     let playlists = get().playlists;
-    playlist.songList = playlist.songList.concat(addSongs).filter(v => !removeSongs.includes(v));
+    const currentPlaylist = get().currentPlaylist;
+    const playlistSongsId = playlist.songList.map(v => v.id);
+    const removeSongsId = removeSongs.map(v => v.id);
+
+    playlist.songList = playlist.songList
+      .concat(addSongs.filter(v => !playlistSongsId.includes(v.id)))
+      .filter(v => !removeSongsId.includes(v.id));
     playlists[playlist.id] = playlist;
+    if (playlist.id === currentPlaylist.id) {
+      set({ currentPlaylist: playlist });
+    }
     set({ playlists });
     savePlaylist(playlist);
+    set({ playlistShouldReRender: !get().playlistShouldReRender });
   },
 
   initPlayer: async (val: PlayerStorageObject) => {
     set({ currentPlayingId: val.lastPlaylistId[1] });
+    set({ currentPlayingList: val.lastPlaylistId[0] });
     set({
       currentPlaylist: notNullDefault(
         val.playlists[val.lastPlaylistId[0]],

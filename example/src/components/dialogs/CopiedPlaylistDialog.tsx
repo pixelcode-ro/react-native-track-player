@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import {
   Button,
   Dialog,
@@ -12,6 +12,7 @@ import {
 import { FlashList } from '@shopify/flash-list';
 import Playlist, { dummyPlaylist } from '../../objects/Playlist';
 import { useNoxSetting } from '../../hooks/useSetting';
+import { styles } from '../style';
 interface props {
   visible: boolean;
   fromList: Playlist;
@@ -25,43 +26,57 @@ export default ({
   onClose = () => void 0,
   onSubmit = () => void 0,
 }: props) => {
-  const [playlistIndex, setPlaylistIndex] = useState(0);
+  const [playlistIndex, setPlaylistIndex] = useState('');
   const playlistIds = useNoxSetting(state => state.playlistIds);
   const playlists = useNoxSetting(state => state.playlists);
   const updatePlaylist = useNoxSetting(state => state.updatePlaylist);
 
   const handleClose = () => {
-    setPlaylistIndex(0);
+    setPlaylistIndex('');
     onClose();
   };
 
   const handleSubmit = () => {
-    setPlaylistIndex(0);
-    if (playlistIds.length <= playlistIndex) {
+    setPlaylistIndex('');
+    if (!playlists[playlistIndex]) {
       onClose();
       return;
     }
-    const toList = playlists[playlistIds[playlistIndex]];
-    updatePlaylist(
-      toList, 
-      fromList.songList
-    );
+    console.log(fromList.songList, playlistIndex);
+    const toList = playlists[playlistIndex];
+    updatePlaylist(toList, fromList.songList, []);
     onSubmit();
   };
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={handleClose}>
-        <Dialog.Title>{`Copy ${fromList.title} to Playlist...`}</Dialog.Title>
-        <Dialog.Content>
+      <Dialog
+        visible={visible}
+        onDismiss={handleClose}
+        style={{ height: '70%' }}
+      >
+        <Dialog.Title>{`Send ${fromList.title} to...`}</Dialog.Title>
+        <Dialog.Content style={{ ...styles.topBarContainer, height: '70%' }}>
           <FlashList
-            data={playlistIds.map(val => [val, playlists[val].title])}
+            data={playlistIds
+              .filter(val => val !== fromList.id)
+              .map(val => [val, playlists[val].title])}
             renderItem={({ item, index }) => (
-              <RadioButton
-                value={item[1]}
-                status={playlistIndex === index ? 'checked' : 'unchecked'}
-                onPress={() => setPlaylistIndex(index)}
-              />
+              <Pressable
+                onPress={() => setPlaylistIndex(item[0])}
+                style={{ paddingVertical: 5 }}
+              >
+                <View style={{ flexDirection: 'row' }}>
+                  <RadioButton
+                    value={item[0]}
+                    status={playlistIndex === item[0] ? 'checked' : 'unchecked'}
+                    onPress={() => setPlaylistIndex(item[0])}
+                  />
+                  <Text variant="titleLarge" style={{ paddingTop: 3 }}>
+                    {item[1]}
+                  </Text>
+                </View>
+              </Pressable>
             )}
             keyExtractor={item => item[0]}
             estimatedItemSize={20}

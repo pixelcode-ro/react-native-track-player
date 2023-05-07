@@ -48,7 +48,6 @@ export function useSetupPlayer() {
       if (unmounted) return;
       setPlayerReady(true);
       const queue = await TrackPlayer.getQueue();
-      console.log('queue', queue);
       if (unmounted) return;
       if (queue.length <= 0) {
         await QueueInitialTracksService();

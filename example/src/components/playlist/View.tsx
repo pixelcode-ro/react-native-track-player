@@ -14,7 +14,6 @@ const Playlist = () => {
         <BiliSearchbar
           onSearched={(songs: Array<Song>) => console.log(songs)}
         />
-        <PlaylistInfo />
         <PlaylistList />
       </View>
     </SafeAreaView>

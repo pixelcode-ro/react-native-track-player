@@ -7,7 +7,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { IconButton, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
+import { Alert, Pressable } from 'react-native';
 import { styles } from '../style';
 import { useNoxSetting } from '../../hooks/useSetting';
 import { ViewEnum } from '../../enums/View';
@@ -71,12 +71,13 @@ export default (props: any) => {
         onPress={() => goToPlaylist(STORAGE_KEYS.SEARCH_PLAYLIST_KEY)}
         key={uuidv4()}
         icon={() => (
-          <IconButton
-            icon="new-box"
+          <Pressable
             onPress={() => setNewPlaylistDialogOpen(true)}
-            size={30}
             style={{ position: 'absolute', right: 10 }}
-          />
+            hitSlop={40}
+          >
+            <IconButton icon="new-box" size={30} />
+          </Pressable>
         )}
       />
       <NewPlaylistDialog
@@ -90,12 +91,17 @@ export default (props: any) => {
           label={playlists[val].title}
           onPress={() => goToPlaylist(val)}
           icon={() => (
-            <IconButton
-              icon="close"
+            <Pressable
               onPress={() => confirmOnDelete(val)}
-              size={25}
+              hitSlop={40}
               style={{ position: 'absolute', right: 10 }}
-            />
+            >
+              <IconButton
+                icon="close"
+                onPress={() => confirmOnDelete(val)}
+                size={25}
+              />
+            </Pressable>
           )}
           key={uuidv4()}
           style={{}}

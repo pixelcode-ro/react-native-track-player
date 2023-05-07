@@ -1,11 +1,11 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
 import TrackPlayer, {
   State,
   usePlayWhenReady,
 } from 'react-native-track-player';
 import { useDebouncedValue } from '../../hooks';
-import { IconButton } from 'react-native-paper';
 
 export const PlayPauseButton: React.FC<{
   state: State | undefined;
