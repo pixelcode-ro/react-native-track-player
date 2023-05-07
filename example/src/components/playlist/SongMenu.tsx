@@ -9,11 +9,11 @@ enum ICONS {
   COPY_SONG_NAME = '',
   COPY_SONG_URL = '',
   GOTO_BILIBILI = '',
-  SEARCH_IN_PLAYLIST = '',
+  SEARCH_IN_PLAYLIST = 'text-search',
   RENAME = '',
-  RELOAD = '',
+  RELOAD = 'refresh',
   REMOVE = 'delete',
-  REMOVE_AND_BAN_BVID = '',
+  REMOVE_AND_BAN_BVID = 'delete-forever',
 }
 
 interface props {
@@ -96,14 +96,17 @@ export default ({
       <Menu.Item
         leadingIcon={ICONS.SEARCH_IN_PLAYLIST}
         onPress={closeMenu}
-        title="Undo"
+        title="Search in Playlist"
       />
-      <Menu.Item leadingIcon={ICONS.RENAME} onPress={closeMenu} title="Undo" />
-      <Menu.Item leadingIcon={ICONS.RELOAD} onPress={closeMenu} title="Undo" />
+      <Menu.Item
+        leadingIcon={ICONS.RELOAD}
+        onPress={closeMenu}
+        title="Reload BVID"
+      />
       <Menu.Item
         leadingIcon={ICONS.REMOVE_AND_BAN_BVID}
         onPress={closeMenu}
-        title="Undo"
+        title="Remove and BAN"
       />
     </Menu>
   );

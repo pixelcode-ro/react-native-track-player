@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     // paddingHorizontal: 20,
-    paddingLeft: 20,
+    paddingLeft: 10,
     paddingRight: 5,
     justifyContent: 'flex-end',
     top: 4,

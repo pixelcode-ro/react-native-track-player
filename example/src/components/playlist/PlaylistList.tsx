@@ -7,6 +7,8 @@ import { useNoxSetting } from '../../hooks/useSetting';
 import { IconButton, Text } from 'react-native-paper';
 import { seconds2HHMMSS } from '../../utils/Utils';
 import SongMenu from './SongMenu';
+import Song from '../../objects/SongInterface';
+import PlaylistInfo from './PlaylistInfo';
 
 /*
 import Song, { dummySong } from '../../objects/SongInterface';
@@ -23,6 +25,7 @@ export default () => {
   const [checking, setChecking] = useState(false);
   const [searching, setSearching] = useState(false);
   const [shouldReRender, setShouldReRender] = useState(false);
+  const [currentRows, setCurrentRows] = useState<Song[]>([]);
   const playlistShouldReRender = useNoxSetting(
     state => state.playlistShouldReRender
   );
@@ -44,10 +47,53 @@ export default () => {
     setShouldReRender(val => !val);
   };
 
+  const reParseSearch = (
+    searchStr: string,
+    rows: Array<Song>,
+    defaultExtract = (someRows: Array<Song>, searchstr: string) =>
+      someRows.filter(row =>
+        row.name.toLowerCase().includes(searchstr.toLowerCase())
+      )
+  ) => {
+    const reExtractions = [
+      {
+        regex: /parsed:(.+)/,
+        process: (val: RegExpExecArray, someRows: Array<Song>) =>
+          someRows.filter(row => row.parsedName === val[1]),
+      },
+    ];
+    let defaultExtraction = true;
+    for (const searchSubStr of searchStr.split('|')) {
+      for (const reExtraction of reExtractions) {
+        const extracted = reExtraction.regex.exec(searchSubStr);
+        if (extracted !== null) {
+          rows = reExtraction.process(extracted, rows);
+          defaultExtraction = false;
+          break;
+        }
+      }
+    }
+    // if none matches, treat as a generic search, check if any field contains the search string
+    if (defaultExtraction) {
+      rows = defaultExtract(rows, searchStr);
+    }
+    return rows;
+  };
+
+  // TODO: useDebunce here
+  const handleSearch = (searchedVal: string) => {
+    if (searchedVal === '') {
+      setCurrentRows(currentPlaylist.songList);
+      return;
+    }
+    setCurrentRows(reParseSearch(searchedVal, currentPlaylist.songList));
+  };
+
   useEffect(() => {
     resetSelected();
     setChecking(false);
     setSearching(false);
+    setCurrentRows(currentPlaylist.songList);
   }, [currentPlaylist]);
 
   useEffect(() => {
@@ -57,20 +103,7 @@ export default () => {
   return (
     <View>
       <View style={[styles.topBarContainer, { top: 10 }]}>
-        <View style={{ flex: 3 }}>
-          <Text variant="titleMedium" style={{}}>
-            {currentPlaylist.title}
-          </Text>
-          <Text variant="labelMedium" style={{}}>
-            {`${currentPlaylist.songList.length} / ${seconds2HHMMSS(
-              currentPlaylist.songList.reduce(
-                (accumulator, currentValue) =>
-                  accumulator + currentValue.duration,
-                0
-              )
-            )}`}
-          </Text>
-        </View>
+        <PlaylistInfo search={searching} onSearch={handleSearch} />
         <View
           style={{
             flexDirection: 'row',
@@ -91,7 +124,12 @@ export default () => {
             onPress={() => setChecking(val => !val)}
             size={25}
           />
-          <IconButton icon="autorenew" onPress={() => console.log} size={25} />
+          <IconButton
+            icon="magnify"
+            onPress={() => setSearching(val => !val)}
+            size={25}
+            mode={searching ? 'contained' : undefined}
+          />
           <IconButton
             icon="dots-horizontal"
             onPress={() => console.log}
@@ -106,7 +144,7 @@ export default () => {
         }}
       >
         <FlashList
-          data={currentPlaylist.songList}
+          data={currentRows}
           renderItem={({ item, index }) => (
             <SongInfo
               item={item}
