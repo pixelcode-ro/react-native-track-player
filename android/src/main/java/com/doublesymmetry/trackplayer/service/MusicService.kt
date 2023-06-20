@@ -12,13 +12,10 @@ import android.support.v4.media.RatingCompat
 import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.PRIORITY_LOW
-import androidx.media.MediaBrowserServiceCompat
-import android.support.v4.media.MediaBrowserCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.doublesymmetry.kotlinaudio.models.*
 import com.doublesymmetry.kotlinaudio.models.NotificationButton.*
 import com.doublesymmetry.kotlinaudio.players.QueuedAudioPlayer
-import com.doublesymmetry.trackplayer.HeadlessJsMediaService
 import com.doublesymmetry.trackplayer.R as TrackPlayerR
 import com.doublesymmetry.trackplayer.extensions.NumberExt.Companion.toMilliseconds
 import com.doublesymmetry.trackplayer.extensions.NumberExt.Companion.toSeconds
@@ -31,6 +28,7 @@ import com.doublesymmetry.trackplayer.module.MusicEvents.Companion.EVENT_INTENT
 import com.doublesymmetry.trackplayer.utils.BundleUtils
 import com.doublesymmetry.trackplayer.utils.BundleUtils.setRating
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.HeadlessJsTaskService
 import com.facebook.react.jstasks.HeadlessJsTaskConfig
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
@@ -38,11 +36,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 @MainThread
-class MusicService : HeadlessJsMediaService() {
+class MusicService : HeadlessJsTaskService() {
     private lateinit var player: QueuedAudioPlayer
     private val binder = MusicBinder()
     private val scope = MainScope()
     private var progressUpdateJob: Job? = null
+    private var musicBrowserService = MusicBrowserService()
 
     /**
      * Use [appKilledPlaybackBehavior] instead.
@@ -50,39 +49,6 @@ class MusicService : HeadlessJsMediaService() {
     @Deprecated("This will be removed soon")
     var stoppingAppPausesPlayback = true
         private set
-
-    override fun onGetRoot(
-            clientPackageName: String,
-            clientUid: Int,
-            rootHints: Bundle?
-    ): MediaBrowserServiceCompat.BrowserRoot {
-        return MediaBrowserServiceCompat.BrowserRoot("/", null)
-    }
-
-    override fun onLoadChildren(
-            parentMediaId: String,
-            result: MediaBrowserServiceCompat.Result<List<MediaBrowserCompat.MediaItem>>
-    ) {
-        //  Browsing not allowed
-        if ("MY_EMPTY_MEDIA_ROOT_ID" == parentMediaId) {
-            result.sendResult(null)
-            return
-        }
-
-        // Assume for example that the music catalog is already loaded/cached.
-
-        val mediaItems = emptyList<MediaBrowserCompat.MediaItem>()
-
-        // Check if this is the root menu:
-        if ("MY_MEDIA_ROOT_ID" == parentMediaId) {
-            // Build the MediaItem objects for the top level,
-            // and put them in the mediaItems list...
-        } else {
-            // Examine the passed parentMediaId to see which submenu we're at,
-            // and put the children of that menu in the mediaItems list...
-        }
-        result.sendResult(mediaItems)
-    }
 
     enum class AppKilledPlaybackBehavior(val string: String) {
         CONTINUE_PLAYBACK("continue-playback"), PAUSE_PLAYBACK("pause-playback"), STOP_PLAYBACK_AND_REMOVE_NOTIFICATION("stop-playback-and-remove-notification")
@@ -185,7 +151,7 @@ class MusicService : HeadlessJsMediaService() {
 
         player = QueuedAudioPlayer(this@MusicService, playerConfig, bufferConfig, cacheConfig)
         player.automaticallyUpdateNotificationMetadata = automaticallyUpdateNotificationMetadata
-        sessionToken = player.getMediaSessionToken()
+        musicBrowserService.sessionToken = player.getMediaSessionToken()
         observeEvents()
     }
 
@@ -655,7 +621,7 @@ class MusicService : HeadlessJsMediaService() {
         // return super.onBind(intent)
         val intentAction = intent?.action
         return if (intentAction != null) {
-            super.onBind(intent)
+            musicBrowserService.onBind(intent)
         } else {
             binder
         }
