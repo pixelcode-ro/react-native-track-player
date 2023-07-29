@@ -3,6 +3,7 @@ import TrackPlayer, {
   Capability,
   RepeatMode,
 } from 'react-native-track-player';
+import { Event } from 'react-native-track-player';
 
 const setupPlayer = async (
   options: Parameters<typeof TrackPlayer.setupPlayer>[0]
@@ -18,7 +19,7 @@ const setupPlayer = async (
     // A timeout will mostly only execute when the app is in the foreground,
     // and even if we were in the background still, it will reject the promise
     // and we'll try again:
-    await new Promise<void>((resolve) => setTimeout(resolve, 1));
+    await new Promise<void>(resolve => setTimeout(resolve, 1));
   }
 };
 

@@ -46,13 +46,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   container: {
-    height: 40,
-    width: 380,
-    marginTop: 25,
+    width: '100%',
+    marginTop: 10,
     flexDirection: 'row',
   },
   labelContainer: {
-    width: 370,
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },

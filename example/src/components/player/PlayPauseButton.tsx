@@ -1,18 +1,18 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
 import TrackPlayer, {
   State,
   usePlayWhenReady,
 } from 'react-native-track-player';
-import { useDebouncedValue } from '../hooks';
-import { Button } from './Button';
+import { useDebouncedValue } from '../../hooks';
 
 export const PlayPauseButton: React.FC<{
   state: State | undefined;
 }> = ({ state }) => {
   const playWhenReady = usePlayWhenReady();
   const isLoading = useDebouncedValue(
-    state === State.Loading || state === State.Buffering,
+    state === State.Loading, // || state === State.Buffering
     250
   );
 
@@ -22,14 +22,14 @@ export const PlayPauseButton: React.FC<{
   const showBuffering = playWhenReady && isLoading;
   return showBuffering ? (
     <View style={styles.statusContainer}>
-      <ActivityIndicator />
+      <ActivityIndicator size={50} />
     </View>
   ) : (
-    <Button
-      title={showPause ? 'Pause' : 'Play'}
+    <IconButton
+      icon={showPause ? 'pause' : 'play'}
       onPress={showPause ? TrackPlayer.pause : TrackPlayer.play}
-      type="primary"
-      style={styles.playPause}
+      mode="contained"
+      size={50}
     />
   );
 };

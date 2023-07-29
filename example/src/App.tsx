@@ -1,31 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
-import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
-
-import { Button, PlayerControls, Progress, TrackInfo } from './components';
-import { QueueInitialTracksService, SetupService } from './services';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Linking, SafeAreaView } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useSetupPlayer, Player } from './components/player/View';
+import Playlist from './components/playlist/View';
+import { styles } from './components/style';
+import { IconButton, Portal } from 'react-native-paper';
+import PlayerBottomPanel from './components/player/PlayerProgressControls';
+import { useNoxSetting } from './hooks/useSetting';
+import { initPlayerObject } from './utils/ChromeStorage';
+import PlaylistDrawer from './components/playlists/View';
+import { ViewEnum } from './enums/View';
+import Settings from './components/setting/View';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App: React.FC = () => {
-  const track = useActiveTrack();
   const isPlayerReady = useSetupPlayer();
+  const Drawer = createDrawerNavigator();
+  const Tab = createMaterialTopTabNavigator();
+  const initPlayer = useNoxSetting(state => state.initPlayer);
+
+  function NoxPlayer() {
+    return (
+      <React.Fragment>
+        <Tab.Navigator>
+          <Tab.Screen
+            name={ViewEnum.PLAYER_COVER}
+            component={Player}
+            options={{ tabBarStyle: { display: 'none' } }}
+          />
+          <Tab.Screen
+            name={ViewEnum.PLAYER_PLAYLIST}
+            component={Playlist}
+            options={{ tabBarStyle: { display: 'none' } }}
+          />
+        </Tab.Navigator>
+        <PlayerBottomPanel />
+      </React.Fragment>
+    );
+  }
 
   useEffect(() => {
+    async function initializePlayer() {
+      await initPlayer(await initPlayerObject());
+    }
+
     function deepLinkHandler(data: { url: string }) {
       console.log('deepLinkHandler', data.url);
     }
+
+    initializePlayer();
 
     // This event will be fired when the app is already open and the notification is clicked
     const subscription = Linking.addEventListener('url', deepLinkHandler);
 
     // When you launch the closed app from the notification or any other link
-    Linking.getInitialURL().then((url) => console.log('getInitialURL', url));
+    Linking.getInitialURL().then(url => console.log('getInitialURL', url));
 
     return () => {
       subscription.remove();
@@ -41,69 +72,35 @@ const App: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.screenContainer}>
-      <StatusBar barStyle={'light-content'} />
-      <View style={styles.contentContainer}>
-        <View style={styles.topBarContainer}>
-          <Button
-            title="Queue"
-            onPress={() => console.log('TODO: implement queue interface')}
-            type="primary"
-          />
-        </View>
-        <TrackInfo track={track} />
-        <Progress live={track?.isLiveStream} />
-      </View>
-      <View style={styles.actionRowContainer}>
-        <PlayerControls />
-      </View>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Portal.Host>
+          <Drawer.Navigator
+            initialRouteName="Home"
+            drawerContent={PlaylistDrawer}
+          >
+            <Drawer.Screen
+              name={ViewEnum.PLAYER_HOME}
+              component={NoxPlayer}
+              options={{
+                header: () => null,
+                title: 'Home',
+                drawerIcon: () => <IconButton icon="home-outline" />,
+              }}
+            />
+            <Drawer.Screen
+              name={ViewEnum.LEFT_DRAWER}
+              options={{
+                drawerIcon: () => <IconButton icon="cog" />,
+                title: 'Settings',
+              }}
+              component={Settings}
+            />
+          </Drawer.Navigator>
+        </Portal.Host>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: '#212121',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  contentContainer: {
-    flex: 3,
-    alignItems: 'center',
-  },
-  topBarContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    justifyContent: 'flex-end',
-  },
-  actionRowContainer: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-});
-
-function useSetupPlayer() {
-  const [playerReady, setPlayerReady] = useState<boolean>(false);
-
-  useEffect(() => {
-    let unmounted = false;
-    (async () => {
-      await SetupService();
-      if (unmounted) return;
-      setPlayerReady(true);
-      const queue = await TrackPlayer.getQueue();
-      if (unmounted) return;
-      if (queue.length <= 0) {
-        await QueueInitialTracksService();
-      }
-    })();
-    return () => {
-      unmounted = true;
-    };
-  }, []);
-  return playerReady;
-}
 
 export default App;

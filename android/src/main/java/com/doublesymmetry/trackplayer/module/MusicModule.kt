@@ -346,7 +346,7 @@ class MusicModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
                 callback.resolve(null)
             }
         }
-
+        
     @ReactMethod
     fun updateNowPlayingMetadata(map: ReadableMap?, callback: Promise) = scope.launch {
         if (verifyServiceBoundOrReject(callback)) return@launch
