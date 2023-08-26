@@ -42,13 +42,20 @@ export const SetupService = async () => {
       Capability.SkipToNext,
       Capability.SkipToPrevious,
       Capability.SeekTo,
+      Capability.JumpBackward,
+      Capability.JumpForward,
     ],
     compactCapabilities: [
       Capability.Play,
       Capability.Pause,
       Capability.SkipToNext,
+      Capability.JumpBackward,
+      Capability.JumpForward,
     ],
     progressUpdateEventInterval: 2,
+    forwardJumpInterval: 1,
+    backwardJumpInterval: 1,
+    forwardIcon: require('../assets/icons/heart.png'),
   });
   await TrackPlayer.setRepeatMode(DefaultRepeatMode);
 };
